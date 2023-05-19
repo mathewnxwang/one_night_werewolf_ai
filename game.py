@@ -13,7 +13,9 @@ deliberate_prompt = '''You are playing a social deduction game.
 Your name is {player_id}.
 You are a {player_type}.
 You are on the {player_team} team.
+=====
 The conversation so far: {conversation}
+=====
 You also have the following information: {info}
 =====
 Accomplish the following five tasks:
@@ -30,9 +32,11 @@ action_prompt = '''You are playing a social deduction game.
 Your name is {player_id}.
 You are a {player_type}.
 You are on the {player_team} team.
+=====
 The conversation so far: {conversation}
+=====
 You also have the following information: {info}
-====
+=====
 Accomplish the following five tasks:
 1. goal: {player_goal}
 2. synthesis: Synthesize your goal with the information and conversation available.
@@ -126,19 +130,17 @@ class WerewolfGame:
         try:
             parsed_thought = json.loads(raw_thought)
         except json.JSONDecodeError as e:
-            structured_thought = {
-                'player_id': player_id,
-                'thoughts': 'I have a brain fart... I think I\'ll skip this turn.'
-            }
+            parsed_thought = 'I have a brain fart... I think I\'ll skip this turn.'
         structured_thought = {
             'player_id': player_id,
+            'prompt': prompt,
             'thoughts': parsed_thought
         }
         self.thoughts.append(structured_thought)
 
         message = structured_thought['thoughts']['message']
         formatted_message = f'{player_id}: {message}'
-        self.conversation = self.conversation + '\n' + formatted_message
+        self.conversation = self.conversation + '  \n' + formatted_message
 
     def conversation_round(self):
         for key, value in self.players.items():

@@ -10,7 +10,7 @@ import streamlit as st
 
 # Prompt templates
 
-converse_prompt = '''There are 5 players: 3 villagers, 1 seer, and 1 werewolf.
+deliberate_prompt = '''You are playing a social deduction game.
 Your name is {player_id}.
 You are a {player_type}.
 You are on the {player_team} team.
@@ -22,12 +22,29 @@ Accomplish the following five tasks:
 2. synthesis_thought: Synthesize your goal with the information and conversation available.
 3. truth_thought: Should I tell the other player what kind of player I am?
 4. lie_thought: Should I lie to the other players about what kind of player I am?
-5. message: Based on your answers to the previous tasks, say something new to the conversation to achieve your goal.
+5. message: Based on your answers to the previous tasks, add something new to the conversation to achieve your goal.
 =====
 Return a JSON object with the 5 keys of goal_thought, synthesis_thought, truth_thought, lie_thought, and message.
 '''
 
-vote_prompt = '''
+action_prompt = '''You are playing a social deduction game.
+Your name is {player_id}.
+You are a {player_type}.
+You are on the {player_team} team.
+The conversation so far: {conversation}
+You also have the following information: {info}
+====
+Accomplish the following five tasks:
+1. goal_thought: {player_goal}
+2. synthesis_thought: Synthesize your goal with the information and conversation available.
+3. defend_thought: Do I need to defend myself of being accused as the werewolf?
+4. accuse_thought: Who should I accuse of being the werewolf?
+5. Based on your answers to the previous tasks, either defend yourself or accuse someone else of being the werewolf.
+=====
+Return a JSON object with the 5 keys of goal_thought, synthesis_thought, defend_thought, accuse_thought, and message.
+'''
+
+vote_prompt = '''You are playing a social deduction game.
 There are 5 players: 3 villagers, 1 seer, and 1 werewolf.
 Your name is {player_id}.
 You are a {player_type}.
@@ -40,7 +57,7 @@ Based on the following conversation, vote for the player to eliminate out of the
 Name the player to eliminate: 
 '''
 
-converse_template = PromptTemplate(
+deliberate_template = PromptTemplate(
     input_variables=[
         'player_id',
         'player_type',
@@ -48,7 +65,17 @@ converse_template = PromptTemplate(
         'player_goal',
         'info',
         'conversation'],
-    template=converse_prompt)
+    template=deliberate_prompt)
+
+action_template = PromptTemplate(
+    input_variables=[
+        'player_id',
+        'player_type',
+        'player_team',
+        'player_goal',
+        'info',
+        'conversation'],
+    template=action_prompt)
 
 vote_template = PromptTemplate(input_variables=['player_id', 'player_type', 'player_team', 'vote_goal', 'player_list', 'conversation'], template=vote_prompt)
 
@@ -59,6 +86,7 @@ class WerewolfGame:
         self.conversation = ''
         self.thoughts = []
         self.players = {}
+        self.round_counter = 0
 
     def get_player_attributes(self, player_type):
         if player_type == 'Villager':
@@ -69,7 +97,7 @@ class WerewolfGame:
             info = 'None'
         elif player_type == 'Seer':
             team = 'villager'
-            info = 'As the seer, you can see that Ryan is the werewolf.'
+            info = f'As the seer, you can see that Lalo Salomanca is the werewolf.'
         
         if team == 'villager':
             player_goal = '''What can I say to find out who the werewolf is?'''
@@ -80,13 +108,13 @@ class WerewolfGame:
         
         return team, info, player_goal, vote_goal
 
-    def player_turn(self, player_id, player_type, conversation_input):
+    def player_turn(self, player_id, player_type, conversation_input, prompt_template):
         global conversation
         global thoughts
 
         player_attributes = self.get_player_attributes(player_type)
 
-        prompt = converse_template.format(
+        prompt = prompt_template.format(
             player_id=player_id,
             player_type=player_type,
             player_team=player_attributes[0],
@@ -98,8 +126,12 @@ class WerewolfGame:
         thought = call_llm(prompt)
         self.thoughts.append(thought)
 
-        parsed_thought = json.loads(thought)
-        message = parsed_thought['message']
+        try:
+            parsed_thought = json.loads(thought)
+            message = parsed_thought['message']
+        except json.JSONDecodeError as e:
+            message = 'I have a brain fart... I think I\'ll skip this turn.'
+        
         message = f'{player_id}: {message}'
         self.conversation = self.conversation + '\n' + message
 
@@ -107,7 +139,19 @@ class WerewolfGame:
         for key, value in self.players.items():
             player_id=key
             player_type=value
-            self.player_turn(player_id=player_id, player_type=player_type, conversation_input=self.conversation)
+
+            if self.round_counter == 0:
+                prompt_template = deliberate_template
+            elif self.round_counter >= 1:
+                prompt_template = action_template
+            
+            self.player_turn(
+                player_id=player_id,
+                player_type=player_type,
+                conversation_input=self.conversation,
+                prompt_template=prompt_template)
+            
+        self.round_counter =+ 1
 
     def conversation_full(self, rounds):
         for _ in range(rounds):

@@ -8,6 +8,7 @@ import json
 from collections import Counter
 import streamlit as st
 from game import WerewolfGame
+import itertools
 
 page_title = 'One Night Werewolf, AI Version'
 st.set_page_config(page_title=page_title)
@@ -33,21 +34,35 @@ with config_col2:
 
 st.header('Players')
 
+default_values = {
+    'Saul Goodman': 'Villager',
+    'Kim Wexler': 'Villager',
+    'Lalo Salomanca': 'Werewolf',
+    'Gus Fring': 'Seer',
+    'Mike Ehrmantrout': 'Villager',
+    'Nacho Varga': 'Villager',
+    'Chuck McGill': 'Werewolf',
+    'Howard Hamlin': 'Villager'
+}
+
 col1, col2 = st.columns(2)
 
 with col1:
-    player_1 = st.text_input(label='Player 1 Name', value='Saul Goodman')
-    player_2 = st.text_input(label='Player 2 Name', value='Kim Wexler')
-    player_3 = st.text_input(label='Player 3 Name', value='Lalo Salomanca')
-    player_4 = st.text_input(label='Player 4 Name', value='Gus Fring')
-    player_5 = st.text_input(label='Player 5 Name', value='Mike Ehrmantrout')
+    player_names = []
+    for i in range(1, players_n + 1):
+        key = list(default_values.keys())[i-1]
+        player_name = st.text_input(label=f'Player {i} Name', value=key)
+        player_names.append(player_name)
 
 with col2:
-    player_1_role = st.text_input(label='Player 1 Role', value='Villager')
-    player_2_role = st.text_input(label='Player 2 Role', value='Villager')
-    player_3_role = st.text_input(label='Player 3 Role', value='Werewolf')
-    player_4_role = st.text_input(label='Player 4 Role', value='Seer')
-    player_5_role = st.text_input(label='Player 5 Role', value='Villager')
+    player_roles = []
+    for i in range(1, players_n + 1):
+        value = list(default_values.values())[i-1]
+        player_role = st.selectbox(
+            label=f'Player {i} Role',
+            options=('Villager', 'Werewolf', 'Seer')
+        )
+        player_roles.append(player_role)
 
 run_button = st.button(label='Simulate Game')
 
@@ -55,13 +70,7 @@ run_button = st.button(label='Simulate Game')
 
 if run_button:
     game = WerewolfGame()
-    game.players = {
-        player_1: player_1_role,
-        player_2: player_2_role,
-        player_3: player_3_role,
-        player_4: player_4_role,
-        player_5: player_5_role
-    }
+    game.players = {key: value for key, value in zip(player_names, player_roles)}
     vote_results = game.full_game(rounds_n)
     st.markdown('#### Deliberation')
     st.write(game.conversation)

@@ -6,6 +6,7 @@ from langchain.llms import OpenAI
 call_llm = OpenAI()
 import json
 from collections import Counter
+import random
 
 # Prompt templates
 
@@ -91,7 +92,17 @@ class WerewolfGame:
         self.players = {}
         self.round_counter = 0
 
-    def get_player_attributes(self, player_type):
+    def get_random_player(self, player_id):
+        # exclude the player with the card in question
+        eligible_players = self.players.copy()
+        del eligible_players[player_id]
+        # get a random player and their role
+        player_list = list(eligible_players.keys())
+        random_player_id = random.choice(player_list)
+        random_player_role = eligible_players[random_player_id]
+        return random_player_id, random_player_role
+
+    def get_player_attributes(self, player_id, player_type):
         if player_type == 'Villager':
             team = 'villager'
             info = 'None'
@@ -100,7 +111,10 @@ class WerewolfGame:
             info = 'None'
         elif player_type == 'Seer':
             team = 'villager'
-            info = f'As the seer, you can see that Lalo Salomanca is the werewolf.'
+            seen_player = self.get_random_player(player_id)
+            seen_player_name = seen_player[0]
+            seen_player_role = seen_player[1]
+            info = f'As the seer, you can see that {seen_player_name} is a {seen_player_role}.'
         
         if team == 'villager':
             player_goal = '''What can I say to find out who the werewolf is?'''
@@ -115,7 +129,7 @@ class WerewolfGame:
         global conversation
         global thoughts
 
-        player_attributes = self.get_player_attributes(player_type)
+        player_attributes = self.get_player_attributes(player_id, player_type)
 
         prompt = prompt_template.format(
             player_id=player_id,
@@ -168,7 +182,7 @@ class WerewolfGame:
         player_raw = list(self.players.keys())
         players_list = ', '.join(player_raw)
 
-        player_attributes = self.get_player_attributes(player_type)
+        player_attributes = self.get_player_attributes(player_id, player_type)
         prompt = vote_template.format(
             player_id=player_id,
             player_type=player_type,

@@ -1,14 +1,5 @@
-import openai
-import os
-openai.api_key = os.environ.get('OPENAI_API_KEY')
-from langchain import PromptTemplate
-from langchain.llms import OpenAI
-call_llm = OpenAI()
-import json
-from collections import Counter
 import streamlit as st
 from game import WerewolfGame
-import itertools
 
 page_title = 'One Night Werewolf, AI Version'
 st.set_page_config(page_title=page_title)
@@ -45,16 +36,16 @@ default_values = {
     'Howard Hamlin': 'Villager'
 }
 
-col1, col2 = st.columns(2)
+input_col1, input_col2 = st.columns(2)
 
-with col1:
+with input_col1:
     player_names = []
     for i in range(1, players_n + 1):
         key = list(default_values.keys())[i-1]
         player_name = st.text_input(label=f'Player {i} Name', value=key)
         player_names.append(player_name)
 
-with col2:
+with input_col2:
     player_roles = []
     for i in range(1, players_n + 1):
         value = list(default_values.values())[i-1]
@@ -64,11 +55,16 @@ with col2:
         )
         player_roles.append(player_role)
 
-run_button = st.button(label='Simulate Game')
+run_col1, run_col2 = st.columns(2)
+
+with run_col1:
+    run = st.button(label='Simulate Game')
+with run_col2:
+    dev_run = st.button(label='Dev Run')
 
 # Execute game
 
-if run_button:
+if run or dev_run:
     game = WerewolfGame()
     game.players = {key: value for key, value in zip(player_names, player_roles)}
     vote_results = game.full_game(rounds_n)
@@ -77,3 +73,6 @@ if run_button:
     st.markdown('#### Results')
     st.write(vote_results)
 
+if dev_run:
+    st.markdown('#### Thoughts')
+    st.write(game.thoughts)

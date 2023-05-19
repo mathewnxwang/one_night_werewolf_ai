@@ -6,7 +6,6 @@ from langchain.llms import OpenAI
 call_llm = OpenAI()
 import json
 from collections import Counter
-import streamlit as st
 
 # Prompt templates
 
@@ -18,13 +17,13 @@ The conversation so far: {conversation}
 You also have the following information: {info}
 =====
 Accomplish the following five tasks:
-1. goal_thought: {player_goal}
-2. synthesis_thought: Synthesize your goal with the information and conversation available.
-3. truth_thought: Should I tell the other player what kind of player I am?
-4. lie_thought: Should I lie to the other players about what kind of player I am?
+1. goal: {player_goal}
+2. synthesis: Synthesize your goal with the information and conversation available.
+3. truth: Should I tell the other player what kind of player I am?
+4. lie: Should I lie to the other players about what kind of player I am?
 5. message: Based on your answers to the previous tasks, add something new to the conversation to achieve your goal.
 =====
-Return a JSON object with the 5 keys of goal_thought, synthesis_thought, truth_thought, lie_thought, and message.
+Return a JSON object with the 5 keys of goal, synthesis, truth, lie, and message.
 '''
 
 action_prompt = '''You are playing a social deduction game.
@@ -35,13 +34,13 @@ The conversation so far: {conversation}
 You also have the following information: {info}
 ====
 Accomplish the following five tasks:
-1. goal_thought: {player_goal}
-2. synthesis_thought: Synthesize your goal with the information and conversation available.
-3. defend_thought: Do I need to defend myself of being accused as the werewolf?
-4. accuse_thought: Who should I accuse of being the werewolf?
+1. goal: {player_goal}
+2. synthesis: Synthesize your goal with the information and conversation available.
+3. defend: Do I need to defend myself of being accused as the werewolf?
+4. accuse: Who should I accuse of being the werewolf?
 5. Based on your answers to the previous tasks, either defend yourself or accuse someone else of being the werewolf.
 =====
-Return a JSON object with the 5 keys of goal_thought, synthesis_thought, defend_thought, accuse_thought, and message.
+Return a JSON object with the 5 keys of goal, synthesis, defend, accuse, and message.
 '''
 
 vote_prompt = '''You are playing a social deduction game.
@@ -123,17 +122,23 @@ class WerewolfGame:
             conversation=conversation_input
         )
 
-        thought = call_llm(prompt)
-        self.thoughts.append(thought)
-
+        raw_thought = call_llm(prompt)
         try:
-            parsed_thought = json.loads(thought)
-            message = parsed_thought['message']
+            parsed_thought = json.loads(raw_thought)
         except json.JSONDecodeError as e:
-            message = 'I have a brain fart... I think I\'ll skip this turn.'
-        
-        message = f'{player_id}: {message}'
-        self.conversation = self.conversation + '\n' + message
+            structured_thought = {
+                'player_id': player_id,
+                'thoughts': 'I have a brain fart... I think I\'ll skip this turn.'
+            }
+        structured_thought = {
+            'player_id': player_id,
+            'thoughts': parsed_thought
+        }
+        self.thoughts.append(structured_thought)
+
+        message = structured_thought['thoughts']['message']
+        formatted_message = f'{player_id}: {message}'
+        self.conversation = self.conversation + '\n' + formatted_message
 
     def conversation_round(self):
         for key, value in self.players.items():

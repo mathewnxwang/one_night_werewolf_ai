@@ -180,6 +180,9 @@ class WerewolfGame:
         global conversation
         global thoughts
 
+        thinking_msg = f'{player_id} is thinking...'
+        st.write(thinking_msg)
+        
         player_attributes = self.get_player_data(player_id, player_type)
 
         prompt = prompt_template.format(
@@ -207,8 +210,8 @@ class WerewolfGame:
         formatted_message = f'{player_id}: {message}'
         self.conversation = self.conversation + '  \n' + formatted_message
 
-        print_msg = f'{player_id}: {message}'
-        st.write(print_msg)
+        chat_msg = f'{player_id}: {message}'
+        st.write(chat_msg)
         st.write(structured_thought)
 
     def conversation_round(self):

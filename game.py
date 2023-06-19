@@ -107,41 +107,80 @@ class WerewolfGame:
 
         return random_player_id, random_player_role
 
-    # def card_action(self, player_id, player_type):
-    #     if player_type == 'Seer':
-    #         seen_player = self.get_random_player(player_id)
-    #         seen_player_name = seen_player[0]
-    #         seen_player_role = seen_player[1]
-    #         info 
+    def execute_robber_action(self, players, player_id, player_type):
 
-    def get_player_attributes(self, player_id, player_type):
-        if player_type == 'Villager':
-            team = 'villager'
-            info = 'None'
-        elif player_type == 'Werewolf':
-            team = 'werewolf'
-            info = 'None'
-        elif player_type == 'Seer':
-            team = 'villager'
-            seen_player = self.get_random_player(player_id)
-            seen_player_name = seen_player[0]
-            seen_player_role = seen_player[1]
-            info = f'As the seer, you can see that {seen_player_name} is a {seen_player_role}.'
-        
-        if team == 'villager':
+        # to-do: update action to allow player to select who they want to trade with
+        # existing behavior is that the player randomly trade with another player,
+        # but knows who they traded with
+        target_player_id, target_player_role = self.get_random_player(player_id)
+        players[player_id] = target_player_role
+        players[target_player_id] = player_type
+
+        return target_player_id, target_player_role
+    
+    def execute_seer_action(self, player_id):
+
+        seen_player_name, seen_player_role = self.get_random_player(player_id)
+        return seen_player_name, seen_player_role
+
+    def get_player_team(self, player_type):
+
+        villager_values = ['Villager', 'Seer', 'Robber', 'Drunk']
+        werewolf_values = ['Werewolf', 'Seer Werewolf']
+
+        # if any(player_type == value for value in villager_values):
+        if player_type in villager_values:
+            return 'villager'
+        elif player_type in werewolf_values:
+            return 'werewolf'
+    
+    def get_player_knowledge(self, player_type):
+        # if player_type == 'Seer':
+        #     execute_seer_action()
+        return 'None'
+    
+    def get_player_goals(self, player_team):
+
+        if player_team == 'villager':
             player_goal = '''What can I say to find out who the werewolf is?'''
             vote_goal = '''Vote for the player who you think is the werewolf.'''
-        elif team == 'werewolf':
+        elif player_team == 'werewolf':
             player_goal = '''What can I say to prevent the other players from finding out that I'm the werewolf?'''
             vote_goal = '''Vote for a player who is not the werewolf.'''
         
-        return team, info, player_goal, vote_goal
+        return player_goal, vote_goal
 
-    def player_turn(self, player_id, player_type, conversation_input, prompt_template):
+    def get_player_data(self, player_id, player_type):
+
+        player_team = self.get_player_team(player_type)
+        player_knowledge = self.get_player_knowledge(player_type)
+        player_goals = self.get_player_goals(player_team)
+
+        player_data = (player_team, player_knowledge) + player_goals
+        return player_data
+
+        # elif player_type == 'Seer':
+        #     team = 'villager'
+        #     seen_player_name, seen_player_role = self.execute_card_action(player_id, player_type)
+        #     info = f'As the seer, you can see that {seen_player_name} is a {seen_player_role}.'
+        #     player_attributes = ('villager', info)
+        
+        # elif player_type == 'Robber':
+        #     team = 'villager'
+        #     traded_player = self.execute_card_action(player_id, player_type)
+        #     traded_player_name, traded_player_role = traded_player
+
+    def player_turn(
+        self,
+        player_id,
+        player_type,
+        conversation_input,
+        prompt_template):
+
         global conversation
         global thoughts
 
-        player_attributes = self.get_player_attributes(player_id, player_type)
+        player_attributes = self.get_player_data(player_id, player_type)
 
         prompt = prompt_template.format(
             player_id=player_id,
@@ -183,10 +222,10 @@ class WerewolfGame:
                 prompt_template = action_template
             
             self.player_turn(
-                player_id=player_id,
-                player_type=player_type,
-                conversation_input=self.conversation,
-                prompt_template=prompt_template)
+                player_id,
+                player_type,
+                self.conversation,
+                prompt_template)
             
         self.round_counter =+ 1
 
@@ -198,7 +237,7 @@ class WerewolfGame:
         player_raw = list(self.players.keys())
         players_list = ', '.join(player_raw)
 
-        player_attributes = self.get_player_attributes(player_id, player_type)
+        player_attributes = self.get_player_data(player_id, player_type)
         prompt = vote_template.format(
             player_id=player_id,
             player_type=player_type,
@@ -227,6 +266,10 @@ class WerewolfGame:
     def full_game(self, rounds):
         self.conversation = ''
         self.thoughts = []
+
+        # for player_id, player_role in self.players:
+        #     info = self.execute_card_action(player_id, player_role)
+
         st.markdown('#### Deliberation')
         self.conversation_full(rounds)
         vote_results = self.all_vote()

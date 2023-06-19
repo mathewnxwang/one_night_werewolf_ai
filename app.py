@@ -29,7 +29,6 @@ game = WerewolfGame()
 players_list = list(game.players.items())
 players_list_filtered = players_list[:players_n]
 game.players = dict(players_list_filtered)
-
 input_col1, input_col2 = st.columns(2)
 
 # create configurable text inputs for player names
@@ -72,6 +71,4 @@ with run_col2:
 # Execute game
 
 if run or dev_run:
-    vote_results = game.full_game(rounds_n)
-    st.markdown('#### Results')
-    st.write(vote_results)
+    game.full_game(rounds_n)

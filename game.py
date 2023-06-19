@@ -233,7 +233,7 @@ class WerewolfGame:
         rounds: int
         ) -> None:
         '''
-        Geerate N rounds of conversation
+        Generate N rounds of conversation
         '''
         
         for _ in range(rounds):
@@ -271,7 +271,6 @@ class WerewolfGame:
         '''
         
         vote_results = []
-
         for player_id, player_type in self.players.items():
             vote = self.player_vote(
                 player_id=player_id,
@@ -280,8 +279,25 @@ class WerewolfGame:
             vote_results.append(vote)
 
         counter = Counter(vote_results)
-        most_common_value = counter.most_common(1)[0][0]
-        return most_common_value, vote_results, counter
+        counts = counter.most_common()
+
+        # check if there are more than 1 players with votes
+        # and if the 2 players with the greatest number of votes
+        # are tied with the same number of votes
+        if len(counts) != 1 and counts[0][1] == counts[1][1]:
+            return 'werewolf', 'tie', 'tie', counts
+        
+        else:
+            eliminated_player = counts[0][0]
+            eliminated_role = self.players[eliminated_player]
+            losing_team = self.get_player_team(eliminated_role)
+
+            if losing_team == 'villager':
+                winning_team = 'werewolf'
+            elif losing_team == 'werewolf':
+                winning_team = 'villager'
+            
+            return winning_team, eliminated_player, eliminated_role, dict(counts)
 
     def full_game(
         self,
@@ -299,5 +315,17 @@ class WerewolfGame:
 
         st.markdown('#### Deliberation')
         self.conversation_full(rounds)
-        vote_results = self.all_vote()
-        return vote_results
+
+        st.markdown('#### Results')
+        winning_team, eliminated_player, eliminated_role, vote_data = self.all_vote()
+
+        if eliminated_player == 'tie':
+            st.write('Players couldn\'t agree on who to eliminate and the vote ended up tied.')
+            st.write('As a result, the werewolf team wins!')
+        else:
+            st.write(f'{eliminated_player} was voted to be eliminated. They were a {eliminated_role}!')
+            st.write(f'As a result, the {winning_team} team wins!')
+        
+        st.markdown('#### Vote breakdown')
+        for name, count in vote_data.items():
+            st.write(f'{name}: {count} votes')

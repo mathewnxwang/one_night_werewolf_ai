@@ -2,9 +2,11 @@ import os
 import json
 from collections import Counter
 import random
+from typing import Tuple
 
 import openai
 from langchain.llms import OpenAI
+from langchain import PromptTemplate
 import streamlit as st
 
 from prompts import *
@@ -36,7 +38,10 @@ class WerewolfGame:
         self.players = {}
         self.round_counter = 0
 
-    def get_random_player(self, player_id):
+    def get_random_player(
+        self,
+        player_id: str
+        ) -> Tuple[str, str]:
 
         eligible_players = self.players.copy()
 
@@ -50,7 +55,12 @@ class WerewolfGame:
 
         return random_player_id, random_player_role
 
-    def execute_robber_action(self, players, player_id, player_type):
+    def execute_robber_action(
+        self,
+        players: dict,
+        player_id: str,
+        player_type: str
+        ) -> Tuple[str, str]:
 
         # to-do: update action to allow player to select who they want to trade with
         # existing behavior is that the player randomly trade with another player,
@@ -61,12 +71,18 @@ class WerewolfGame:
 
         return target_player_id, target_player_role
     
-    def execute_seer_action(self, player_id):
+    def execute_seer_action(
+        self,
+        player_id: str
+        ) -> Tuple[str, str]:
 
         seen_player_name, seen_player_role = self.get_random_player(player_id)
         return seen_player_name, seen_player_role
 
-    def get_player_team(self, player_type):
+    def get_player_team(
+        self,
+        player_type: str
+        ) -> str:
 
         villager_values = ['Villager', 'Seer', 'Robber', 'Drunk']
         werewolf_values = ['Werewolf', 'Seer Werewolf']
@@ -77,12 +93,18 @@ class WerewolfGame:
         elif player_type in werewolf_values:
             return 'werewolf'
     
-    def get_player_knowledge(self, player_type):
+    def get_player_knowledge(
+        self,
+        player_type: str
+        ) -> str:
         # if player_type == 'Seer':
         #     execute_seer_action()
         return 'None'
     
-    def get_player_goals(self, player_team):
+    def get_player_goals(
+        self,
+        player_team: str
+        ) -> Tuple[str, str]:
 
         if player_team == 'villager':
             player_goal = '''What can I say to find out who the werewolf is?'''
@@ -93,7 +115,14 @@ class WerewolfGame:
         
         return player_goal, vote_goal
 
-    def get_player_data(self, player_id, player_type):
+    def get_player_data(
+        self,
+        player_id: str,
+        player_type: str
+        ) -> Tuple[str, str, str, str]:
+        '''
+        Get player attributes to generate a conversation message
+        '''
 
         player_team = self.get_player_team(player_type)
         player_knowledge = self.get_player_knowledge(player_type)
@@ -115,10 +144,14 @@ class WerewolfGame:
 
     def player_turn(
         self,
-        player_id,
-        player_type,
-        conversation_input,
-        prompt_template):
+        player_id: str,
+        player_type: str,
+        conversation_input: str,
+        prompt_template: PromptTemplate
+        ) -> None:
+        '''
+        Generate and store thoughts and a conversation message for a player
+        '''
 
         global conversation
         global thoughts
@@ -126,22 +159,24 @@ class WerewolfGame:
         thinking_msg = f'{player_id} is thinking...'
         st.write(thinking_msg)
 
-        player_attributes = self.get_player_data(player_id, player_type)
+        player_team, player_knowledge, player_goal, _ = self.get_player_data(player_id, player_type)
 
         prompt = prompt_template.format(
             player_id=player_id,
             player_type=player_type,
-            player_team=player_attributes[0],
-            player_goal=player_attributes[2],
-            info=player_attributes[1],
+            player_team=player_team,
+            player_goal=player_goal,
+            info=player_knowledge,
             conversation=conversation_input
         )
 
         raw_thought = call_llm(prompt)
+
         try:
             parsed_thought = json.loads(raw_thought)
         except json.JSONDecodeError as e:
             parsed_thought = 'I have a brain fart... I think I\'ll skip this turn.'
+        
         structured_thought = {
             'player_id': player_id,
             'prompt': prompt,
@@ -158,10 +193,16 @@ class WerewolfGame:
         st.write(structured_thought)
 
     def conversation_round(self):
+        '''
+        Generate one round of conversation where every player speaks once
+        '''
+
+        # Every player contributes to the conversation once in order
         for key, value in self.players.items():
             player_id=key
             player_type=value
 
+            # Steer players toward making pointed contributions later in the game
             if self.round_counter == 0:
                 prompt_template = deliberate_template
             elif self.round_counter >= 1:
@@ -175,11 +216,27 @@ class WerewolfGame:
             
         self.round_counter =+ 1
 
-    def conversation_full(self, rounds):
+    def conversation_full(
+        self,
+        rounds: int
+        ) -> None:
+        '''
+        Geerate N rounds of conversation
+        '''
+        
         for _ in range(rounds):
             self.conversation_round()
 
-    def player_vote(self, player_id, player_type, conversation_input):
+    def player_vote(
+        self,
+        player_id: str,
+        player_type: str,
+        conversation_input: str
+        ) -> str:
+        '''
+        Based on all available info to an AI player, return a player name that the AI player votes for as the Werewolf
+        '''
+
         player_raw = list(self.players.keys())
         players_list = ', '.join(player_raw)
 
@@ -197,19 +254,31 @@ class WerewolfGame:
         return vote
 
     def all_vote(self):
+        '''
+        Collect votes from all players and calculate the final result
+        '''
+        
         vote_results = []
 
-        for key, value in self.players.items():
-            player_id=key
-            player_type=value
-            vote = self.player_vote(player_id=player_id, player_type=player_type, conversation_input=self.conversation)
+        for player_id, player_type in self.players.items():
+            vote = self.player_vote(
+                player_id=player_id,
+                player_type=player_type,
+                conversation_input=self.conversation)
             vote_results.append(vote)
 
         counter = Counter(vote_results)
         most_common_value = counter.most_common(1)[0][0]
         return most_common_value, vote_results, counter
 
-    def full_game(self, rounds):
+    def full_game(
+        self,
+        rounds: int
+        ) -> Tuple[str, list, Counter]:
+        '''
+        Execute full conversation and vote
+        '''
+
         self.conversation = ''
         self.thoughts = []
 

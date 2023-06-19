@@ -25,7 +25,7 @@ with config_col2:
 
 st.header('Players')
 
-default_values = {
+default_players = {
     'Saul Goodman': 'Villager',
     'Kim Wexler': 'Villager',
     'Lalo Salomanca': 'Werewolf',
@@ -38,22 +38,37 @@ default_values = {
 
 input_col1, input_col2 = st.columns(2)
 
+# create configurable text inputs for player names
 with input_col1:
     player_names = []
-    for i in range(1, players_n + 1):
-        key = list(default_values.keys())[i-1]
-        player_name = st.text_input(label=f'Player {i} Name', value=key)
+    default_names = list(default_players.keys())
+    names_filtered = default_names[:players_n]
+
+    # generate label and default value for every input
+    for i, name in enumerate(names_filtered):
+        player_name = st.text_input(
+            label=f'Player {i+1} Name',
+            value=name)
         player_names.append(player_name)
 
+# create configurable picklist inputs for player roles
 with input_col2:
     player_roles = []
-    for i in range(1, players_n + 1):
-        value = list(default_values.values())[i-1]
+    default_roles = list(default_players.values())
+    roles_filtered = default_roles[:players_n]
+    possible_roles = ('Villager', 'Werewolf', 'Seer')
+
+    # generate label, options, and default value for every input
+    for i, role in enumerate(roles_filtered):
+        role_index = possible_roles.index(role)
+
         player_role = st.selectbox(
-            label=f'Player {i} Role',
-            options=('Villager', 'Werewolf', 'Seer')
-        )
+            label=f'Player {i+1} Role',
+            options=possible_roles,
+            index=role_index)
         player_roles.append(player_role)
+
+### Run options
 
 run_col1, run_col2 = st.columns(2)
 

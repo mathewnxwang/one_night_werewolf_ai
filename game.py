@@ -1,90 +1,33 @@
-import openai
 import os
-openai.api_key = os.environ.get('OPENAI_API_KEY')
-from langchain import PromptTemplate
-from langchain.llms import OpenAI
-call_llm = OpenAI()
 import json
 from collections import Counter
 import random
+
+import openai
+from langchain.llms import OpenAI
 import streamlit as st
 
-# Prompt templates
+from prompts import *
 
-deliberate_prompt = '''You are playing a social deduction game.
-Your name is {player_id}.
-You are a {player_type}.
-You are on the {player_team} team.
-=====
-The conversation so far: {conversation}
-=====
-You also have the following information: {info}
-=====
-Accomplish the following five tasks:
-1. goal: {player_goal}
-2. synthesis: Synthesize your goal with the information and conversation available.
-3. truth: Should I tell the other player what kind of player I am?
-4. lie: Should I lie to the other players about what kind of player I am?
-5. message: Based on your answers to the previous tasks, add something new to the conversation to achieve your goal.
-=====
-Return a JSON object with the 5 keys of goal, synthesis, truth, lie, and message.
-'''
-
-action_prompt = '''You are playing a social deduction game.
-Your name is {player_id}.
-You are a {player_type}.
-You are on the {player_team} team.
-=====
-The conversation so far: {conversation}
-=====
-You also have the following information: {info}
-=====
-Accomplish the following five tasks:
-1. goal: {player_goal}
-2. synthesis: Synthesize your goal with the information and conversation available.
-3. defend: Do I need to defend myself of being accused as the werewolf?
-4. accuse: Who should I accuse of being the werewolf?
-5. Based on your answers to the previous tasks, either defend yourself or accuse someone else of being the werewolf.
-=====
-Return a JSON object with the 5 keys of goal, synthesis, defend, accuse, and message.
-'''
-
-vote_prompt = '''You are playing a social deduction game.
-There are 5 players: 3 villagers, 1 seer, and 1 werewolf.
-Your name is {player_id}.
-You are a {player_type}.
-You are on the {player_team} team.
-Your goal is to {vote_goal}.
-Based on the following conversation, vote for the player to eliminate out of the following options: {player_list}
-=====
-{conversation}
-=====
-Name the player to eliminate: 
-'''
-
-deliberate_template = PromptTemplate(
-    input_variables=[
-        'player_id',
-        'player_type',
-        'player_team',
-        'player_goal',
-        'info',
-        'conversation'],
-    template=deliberate_prompt)
-
-action_template = PromptTemplate(
-    input_variables=[
-        'player_id',
-        'player_type',
-        'player_team',
-        'player_goal',
-        'info',
-        'conversation'],
-    template=action_prompt)
-
-vote_template = PromptTemplate(input_variables=['player_id', 'player_type', 'player_team', 'vote_goal', 'player_list', 'conversation'], template=vote_prompt)
+openai.api_key = os.environ.get('OPENAI_API_KEY')
+call_llm = OpenAI()
 
 # Class
+
+# class Player:
+#     def __init__(
+#         self,
+#         id,
+#         role,
+#         team,
+#         knowledge,
+#         goals
+#     ):
+#         self.id = id
+#         self.role = role
+#         self.team = team
+#         self.knowledge = knowledge
+#         self.goals = goals
 
 class WerewolfGame:
     def __init__(self):
@@ -182,7 +125,7 @@ class WerewolfGame:
 
         thinking_msg = f'{player_id} is thinking...'
         st.write(thinking_msg)
-        
+
         player_attributes = self.get_player_data(player_id, player_type)
 
         prompt = prompt_template.format(

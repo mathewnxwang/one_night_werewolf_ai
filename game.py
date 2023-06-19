@@ -7,6 +7,7 @@ call_llm = OpenAI()
 import json
 from collections import Counter
 import random
+import streamlit as st
 
 # Prompt templates
 
@@ -93,14 +94,25 @@ class WerewolfGame:
         self.round_counter = 0
 
     def get_random_player(self, player_id):
-        # exclude the player with the card in question
+
         eligible_players = self.players.copy()
+
+        # exclude the player with the card in question
         del eligible_players[player_id]
+
         # get a random player and their role
         player_list = list(eligible_players.keys())
         random_player_id = random.choice(player_list)
         random_player_role = eligible_players[random_player_id]
+
         return random_player_id, random_player_role
+
+    # def card_action(self, player_id, player_type):
+    #     if player_type == 'Seer':
+    #         seen_player = self.get_random_player(player_id)
+    #         seen_player_name = seen_player[0]
+    #         seen_player_role = seen_player[1]
+    #         info 
 
     def get_player_attributes(self, player_id, player_type):
         if player_type == 'Villager':
@@ -155,6 +167,10 @@ class WerewolfGame:
         message = structured_thought['thoughts']['message']
         formatted_message = f'{player_id}: {message}'
         self.conversation = self.conversation + '  \n' + formatted_message
+
+        print_msg = f'{player_id}: {message}'
+        st.write(print_msg)
+        st.write(structured_thought)
 
     def conversation_round(self):
         for key, value in self.players.items():
@@ -211,6 +227,7 @@ class WerewolfGame:
     def full_game(self, rounds):
         self.conversation = ''
         self.thoughts = []
+        st.markdown('#### Deliberation')
         self.conversation_full(rounds)
         vote_results = self.all_vote()
         return vote_results

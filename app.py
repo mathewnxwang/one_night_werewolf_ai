@@ -68,11 +68,5 @@ if run or dev_run:
     game = WerewolfGame()
     game.players = {key: value for key, value in zip(player_names, player_roles)}
     vote_results = game.full_game(rounds_n)
-    st.markdown('#### Deliberation')
-    st.write(game.conversation)
     st.markdown('#### Results')
     st.write(vote_results)
-
-if dev_run:
-    st.markdown('#### Thoughts')
-    st.write(game.thoughts)

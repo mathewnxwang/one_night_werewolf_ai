@@ -25,27 +25,20 @@ with config_col2:
 
 st.header('Players')
 
-default_players = {
-    'Saul Goodman': 'Villager',
-    'Kim Wexler': 'Villager',
-    'Lalo Salomanca': 'Werewolf',
-    'Gus Fring': 'Seer',
-    'Mike Ehrmantrout': 'Villager',
-    'Nacho Varga': 'Villager',
-    'Chuck McGill': 'Werewolf',
-    'Howard Hamlin': 'Villager'
-}
+game = WerewolfGame()
+players_list = list(game.players.items())
+players_list_filtered = players_list[:players_n]
+game.players = dict(players_list_filtered)
 
 input_col1, input_col2 = st.columns(2)
 
 # create configurable text inputs for player names
 with input_col1:
     player_names = []
-    default_names = list(default_players.keys())
-    names_filtered = default_names[:players_n]
+    default_names = list(game.players.keys())
 
     # generate label and default value for every input
-    for i, name in enumerate(names_filtered):
+    for i, name in enumerate(default_names):
         player_name = st.text_input(
             label=f'Player {i+1} Name',
             value=name)
@@ -54,12 +47,11 @@ with input_col1:
 # create configurable picklist inputs for player roles
 with input_col2:
     player_roles = []
-    default_roles = list(default_players.values())
-    roles_filtered = default_roles[:players_n]
+    default_roles = list(game.players.values())
     possible_roles = ('Villager', 'Werewolf', 'Seer')
 
     # generate label, options, and default value for every input
-    for i, role in enumerate(roles_filtered):
+    for i, role in enumerate(default_roles):
         role_index = possible_roles.index(role)
 
         player_role = st.selectbox(
@@ -80,8 +72,6 @@ with run_col2:
 # Execute game
 
 if run or dev_run:
-    game = WerewolfGame()
-    game.players = {key: value for key, value in zip(player_names, player_roles)}
     vote_results = game.full_game(rounds_n)
     st.markdown('#### Results')
     st.write(vote_results)

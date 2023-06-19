@@ -35,7 +35,15 @@ class WerewolfGame:
     def __init__(self):
         self.conversation = ''
         self.thoughts = []
-        self.players = {}
+        self.players = {
+            'Saul Goodman': 'Villager',
+            'Kim Wexler': 'Villager',
+            'Lalo Salomanca': 'Werewolf',
+            'Gus Fring': 'Seer',
+            'Mike Ehrmantrout': 'Villager',
+            'Nacho Varga': 'Villager',
+            'Chuck McGill': 'Werewolf',
+            'Howard Hamlin': 'Villager'}
         self.round_counter = 0
 
     def get_random_player(

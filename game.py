@@ -182,8 +182,8 @@ class WerewolfGame:
 
         try:
             parsed_thought = json.loads(raw_thought)
-        except json.JSONDecodeError as e:
-            parsed_thought = 'I have a brain fart... I think I\'ll skip this turn.'
+        except json.JSONDecodeError:
+            parsed_thought = 'I have a brain fart... I think I\'ll skip my turn.'
         
         structured_thought = {
             'player_id': player_id,
@@ -192,7 +192,11 @@ class WerewolfGame:
         }
         self.thoughts.append(structured_thought)
 
-        message = structured_thought['thoughts']['message']
+        try:
+            message = structured_thought['thoughts']['message']
+        except TypeError:
+            message = 'I have a brain fart... I think I\'ll skip my turn.'
+        
         formatted_message = f'{player_id}: {message}'
         self.conversation = self.conversation + '  \n' + formatted_message
 

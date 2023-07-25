@@ -1,4 +1,9 @@
 from langchain import PromptTemplate
+from langchain.llms import OpenAI
+
+call_llm = OpenAI(temperature=1)
+
+# Prompts
 
 deliberate_prompt = '''You are playing a social deduction game.
 Your name is {player_id}.

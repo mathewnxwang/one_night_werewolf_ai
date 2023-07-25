@@ -1,5 +1,6 @@
 import streamlit as st
 from game import WerewolfGame
+from players import Player
 
 page_title = 'One Night Werewolf, AI Version'
 st.set_page_config(page_title=page_title)
@@ -26,6 +27,20 @@ with config_col2:
 st.header('Players')
 
 game = WerewolfGame()
+
+players_init = [
+    ('Saul Goodman', 'Villager'),
+    ('Kim Wexler', 'Villager'),
+    ('Lalo Salomanca', 'Werewolf'),
+    ('Gus Fring', 'Seer'),
+    ('Mike Ehrmantrout', 'Villager'),
+    # ('Nacho Varga', 'Villager'),
+    # ('Chuck McGill', 'Werewolf'),
+    # ('Howard Hamlin', 'Villager')
+    ]
+
+players = [Player(name, role) for name, role in players_init]
+
 players_list = list(game.players.items())
 players_list_filtered = players_list[:players_n]
 game.players = dict(players_list_filtered)

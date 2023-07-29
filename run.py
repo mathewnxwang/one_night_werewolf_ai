@@ -1,26 +1,14 @@
-from typing import Tuple, Dict
-from collections import Counter
+from typing import Dict
 
 import streamlit as st
 
+from players import init_players
 from mechanics.vote import show_results
 from mechanics.conversation import conversation_full
 
-def init_players(players):
-
-    if players is None:
-        players = {
-            'Saul Goodman': 'Villager',
-            'Kim Wexler': 'Seer',
-            'Gus Fring': 'Werewolf',
-            'Mike Ermantrout': 'Villager' 
-        }
-
-    return players
-
 def full_game(
     rounds: int,
-    players: Dict[str, str] = None,
+    players: Dict[str, str]
     ):
     '''
     Execute full conversation and vote
@@ -29,7 +17,6 @@ def full_game(
     # initialize variables
     conversation = ''
     thoughts = []
-    players = init_players(players)
 
     # for player_id, player_role in self.players:
     #     info = self.execute_card_action(player_id, player_role)

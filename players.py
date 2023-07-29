@@ -1,3 +1,4 @@
+import random
 from typing import Dict, List
 
 import streamlit as st
@@ -12,34 +13,27 @@ def _filter_dict(var_dict: Dict[str, str], n: int) -> Dict[str, str]:
 
 def init_players(players_n: int) -> Dict[str, str]:
     '''
-    Create players dictionary of a certain length
+    Create players list of a certain length
     '''
-    players = {
-        'Saul Goodman': 'Villager',
-        'Kim Wexler': 'Seer',
-        'Gus Fring': 'Werewolf',
-        'Mike Ermantrout': 'Villager',
-        'Howard Hamlin': 'Villager',
-        'Nacho Vargas': 'Werewolf',
-        'Lalo Salomanca': 'Villager'
-    }
+    players = [
+        'Saul Goodman',
+        'Kim Wexler',
+        'Gus Fring',
+        'Mike Ermantrout',
+        'Howard Hamlin',
+        'Nacho Vargas',
+        'Lalo Salomanca']
 
-    players = _filter_dict(players, players_n)
+    players_filtered = players[:players_n]
+    return players_filtered
 
-    return players
-
-# def player_name_inputs(players: Dict[str, str]) -> List[str]:
-#     '''
-#     create configurable text inputs for player names
-#     '''
+def assign_player_roles(players: List) -> Dict[str, str]:
+    '''
+    Randomly assign roles to players
+    '''
     
-#     player_names = []
-#     default_names = list(players.keys())
+    roles = ['Werewolf', 'Seer'] + ['Villager'] * 2
+    random.shuffle(roles)
 
-#     # generate label and default value for every input
-#     for i, name in enumerate(default_names):
-#         player_name = st.text_input(
-#             label=f'Player {i+1} Name',
-#             value=name)
-#         player_names.append(player_name)
-    
+    players_enriched = dict(zip(players, roles))
+    return players_enriched

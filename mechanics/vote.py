@@ -1,6 +1,8 @@
 from collections import Counter
 from typing import Dict
 
+import streamlit as st
+
 from llms import call_llm, vote_template
 from mechanics.utils.fetch_data import get_player_data, get_player_team
 
@@ -62,3 +64,22 @@ def all_vote(
             winning_team = 'villager'
         
         return winning_team, eliminated_player, eliminated_role, dict(counts)
+
+def show_results(players: Dict[str, str], conversation: str):
+    st.markdown('#### Results')
+    winning_team, eliminated_player, eliminated_role, vote_data = all_vote(players, conversation)
+
+    if eliminated_player == 'tie':
+        win_msg = '''Players couldn\'t agree on who to eliminate and the vote ended up tied.
+        As a result, the werewolf team wins!'''
+    else:
+        win_msg = f'''{eliminated_player} was voted to be eliminated. They were a {eliminated_role}!
+        As a result, the {winning_team} team wins!'''
+    st.write(win_msg)
+    print(win_msg)
+    
+    st.markdown('#### Vote breakdown')
+    for name, count in vote_data.items():
+        vote_breakdown = f'{name}: {count} votes'
+        st.write(vote_breakdown)
+        print(vote_breakdown)

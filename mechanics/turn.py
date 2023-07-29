@@ -5,24 +5,23 @@ from langchain.llms import OpenAI
 import streamlit as st
 
 from mechanics.utils.fetch_data import get_player_data
+from llms import call_llm
 
 def player_turn(
     player_id: str,
     player_type: str,
-    conversation_input: str,
-    prompt_template: PromptTemplate
+    prompt_template: PromptTemplate,
+    conversation: str,
+    thoughts: list[dict]
     ) -> None:
     '''
     Generate and store thoughts and a conversation message for a player
     '''
 
-    global conversation
-    global thoughts
-
     thinking_msg = f'{player_id} is thinking...'
     st.write(thinking_msg)
 
-    player_team, player_knowledge, player_goal, _ = get_player_data(player_id, player_type)
+    player_team, player_knowledge, player_goal, _ = get_player_data(player_type)
 
     prompt = prompt_template.format(
         player_id=player_id,
@@ -30,7 +29,7 @@ def player_turn(
         player_team=player_team,
         player_goal=player_goal,
         info=player_knowledge,
-        conversation=conversation_input
+        conversation=conversation
     )
 
     raw_thought = call_llm(prompt)
@@ -58,3 +57,5 @@ def player_turn(
     chat_msg = f'{player_id}: {message}'
     st.write(chat_msg)
     st.write(structured_thought)
+
+    return conversation, thoughts

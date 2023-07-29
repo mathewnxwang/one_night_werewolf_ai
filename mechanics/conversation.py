@@ -1,6 +1,6 @@
 from typing import Dict
 
-from mechanics.llms import deliberate_template, action_template
+from llms import deliberate_template, action_template
 from mechanics.turn import player_turn
 
 def conversation_round(

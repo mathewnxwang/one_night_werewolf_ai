@@ -1,7 +1,7 @@
 from typing import Dict
 
-from llms import deliberate_template, action_template
-from turn import player_turn
+from mechanics.llms import deliberate_template, action_template
+from mechanics.turn import player_turn
 
 def conversation_round(
     round_counter: int,

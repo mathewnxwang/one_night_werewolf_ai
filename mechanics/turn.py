@@ -4,7 +4,7 @@ from langchain import PromptTemplate
 from langchain.llms import OpenAI
 import streamlit as st
 
-from utils import get_player_data
+from mechanics.utils.fetch_data import get_player_data
 
 def player_turn(
     player_id: str,
@@ -33,7 +33,6 @@ def player_turn(
         conversation=conversation_input
     )
 
-    call_llm = OpenAI(temperature=1)
     raw_thought = call_llm(prompt)
 
     try:

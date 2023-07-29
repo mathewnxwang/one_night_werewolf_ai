@@ -1,8 +1,8 @@
 from collections import Counter
 from typing import Dict
 
-from llms import call_llm, vote_template
-from utils import get_player_data, get_player_team
+from mechanics.llms import call_llm, vote_template
+from mechanics.utils.fetch_data import get_player_data, get_player_team
 
 def player_vote(
     players: Dict[str, str],

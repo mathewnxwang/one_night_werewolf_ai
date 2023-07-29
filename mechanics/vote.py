@@ -8,23 +8,23 @@ def player_vote(
     players: Dict[str, str],
     player_id: str,
     player_type: str,
-    conversation_input: str
+    conversation: str
     ) -> str:
     '''
     Based on all available info to an AI player, return a player name that the AI player votes for as the Werewolf
     '''
 
-    player_raw = list(players.keys())
-    players_list = ', '.join(player_raw)
+    player_list = list(players.keys())
+    players_str = ', '.join(player_list)
 
-    player_attributes = get_player_data(player_id, player_type)
+    player_attributes = get_player_data(player_type)
     prompt = vote_template.format(
         player_id=player_id,
         player_type=player_type,
         player_team=player_attributes[0],
         vote_goal=player_attributes[3],
-        player_list=players_list,
-        conversation=conversation_input
+        player_list=players_str,
+        conversation=conversation
     )
 
     vote = call_llm(prompt)
@@ -39,10 +39,7 @@ def all_vote(
     
     vote_results = []
     for player_id, player_type in players.items():
-        vote = player_vote(
-            player_id=player_id,
-            player_type=player_type,
-            conversation_input=conversation)
+        vote = player_vote(players, player_id, player_type, conversation)
         vote_results.append(vote)
 
     counter = Counter(vote_results)
@@ -52,7 +49,7 @@ def all_vote(
     # and if the 2 players with the greatest number of votes
     # are tied with the same number of votes
     if len(counts) != 1 and counts[0][1] == counts[1][1]:
-        return 'werewolf', 'tie', 'tie', counts
+        return 'werewolf', 'tie', 'tie', dict(counts)
     
     else:
         eliminated_player = counts[0][0]

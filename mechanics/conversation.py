@@ -25,16 +25,27 @@ def conversation_round(
             player_id, player_type, prompt_template, conversation, thoughts
         )
     
-    round_counter += 1
-    return round_counter, conversation, thoughts
+    return conversation, thoughts
 
 def conversation_full(
     rounds: int,
-    round_counter: int
+    players: Dict[str, str],
+    conversation: str,
+    thoughts: list
     ) -> None:
     '''
     Generate N rounds of conversation
     '''
     
-    for _ in range(rounds):
-        conversation_round(round_counter)
+    round_counter = 1
+
+    
+    while round_counter <= rounds:
+        print(f'Executing round {round_counter}')
+        conversation, thoughts = conversation_round(
+            round_counter, players, conversation, thoughts
+        )
+
+        round_counter += 1
+    
+    return conversation, thoughts

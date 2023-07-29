@@ -44,6 +44,7 @@ def player_turn(
         'prompt': prompt,
         'thoughts': parsed_thought
     }
+    print(structured_thought)
     thoughts.append(structured_thought)
 
     try:
@@ -52,6 +53,7 @@ def player_turn(
         message = 'I have a brain fart... I think I\'ll skip my turn.'
     
     formatted_message = f'{player_id}: {message}'
+    print(formatted_message)
     conversation = conversation + '  \n' + formatted_message
 
     chat_msg = f'{player_id}: {message}'

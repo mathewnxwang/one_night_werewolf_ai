@@ -1,7 +1,8 @@
 from typing import Tuple
 import random
 
-def get_random_player(
+def _get_random_player(
+    players,
     player_id: str
     ) -> Tuple[str, str]:
 
@@ -17,6 +18,17 @@ def get_random_player(
 
     return random_player_id, random_player_role
 
+def execute_seer_action(
+    self,
+    player_id: str
+    ) -> Tuple[str, str]:
+    '''
+    If a player is a seer, they get information about the role of one other player randomly
+    '''
+
+    seen_player_name, seen_player_role = _get_random_player(player_id)
+    return seen_player_name, seen_player_role
+
 def execute_robber_action(
     players: list,
     player_id: str,
@@ -31,11 +43,3 @@ def execute_robber_action(
     players[target_player_id] = player_type
 
     return target_player_id, target_player_role
-
-def execute_seer_action(
-    self,
-    player_id: str
-    ) -> Tuple[str, str]:
-
-    seen_player_name, seen_player_role = get_random_player(player_id)
-    return seen_player_name, seen_player_role

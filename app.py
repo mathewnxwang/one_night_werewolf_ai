@@ -1,6 +1,6 @@
 import streamlit as st
 
-from players import init_players
+from mechanics.players import init_players
 from run import full_game
 
 page_title = 'One Night Werewolf, AI Version'

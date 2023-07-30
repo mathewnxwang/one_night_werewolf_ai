@@ -1,7 +1,9 @@
 import random
-from typing import Dict, List
+from typing import Any, Dict, List
 
 import streamlit as st
+
+from mechanics.utils.fetch_data import get_player_team, get_player_knowledge, get_player_goals
 
 def _filter_dict(var_dict: Dict[str, str], n: int) -> Dict[str, str]:
     '''
@@ -34,6 +36,23 @@ def assign_player_roles(players: List) -> Dict[str, str]:
     
     roles = ['Werewolf', 'Seer'] + ['Villager'] * 2
     random.shuffle(roles)
+    roles_dict = [{'role': role} for role in roles]
 
-    players_enriched = dict(zip(players, roles))
+    players_enriched = dict(zip(players, roles_dict))
+    return players_enriched
+
+def enrich_player_data(players_enriched: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+    '''
+    Update player dict with attributes
+    '''
+
+    for name, data in players_enriched.items():
+        team = get_player_team(data['role'])
+        knowledge = get_player_knowledge(data['role'])
+        goal = get_player_goals(team)
+        
+        data['team'] = team
+        data['knowledge'] = knowledge
+        data['goal'] = goal
+
     return players_enriched

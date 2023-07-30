@@ -1,4 +1,5 @@
 import json
+from typing import Dict, Any
 
 from langchain import PromptTemplate
 from langchain.llms import OpenAI
@@ -8,8 +9,8 @@ from mechanics.utils.fetch_data import get_player_data
 from llms import call_llm
 
 def player_turn(
-    player_id: str,
-    player_type: str,
+    player_name: str,
+    player_data: Dict[str, Any],
     prompt_template: PromptTemplate,
     conversation: str,
     thoughts: list[dict]
@@ -18,17 +19,15 @@ def player_turn(
     Generate and store thoughts and a conversation message for a player
     '''
 
-    thinking_msg = f'{player_id} is thinking...'
+    thinking_msg = f'{player_name} is thinking...'
     st.write(thinking_msg)
 
-    player_team, player_knowledge, player_goal, _ = get_player_data(player_type)
-
     prompt = prompt_template.format(
-        player_id=player_id,
-        player_type=player_type,
-        player_team=player_team,
-        player_goal=player_goal,
-        info=player_knowledge,
+        player_id=player_name,
+        player_type=player_data['role'],
+        player_team=player_data['team'],
+        player_goal=player_data['goal'],
+        info=player_data['knowledge'],
         conversation=conversation
     )
 
@@ -40,7 +39,7 @@ def player_turn(
         parsed_thought = 'I have a brain fart... I think I\'ll skip my turn.'
     
     structured_thought = {
-        'player_id': player_id,
+        'player_id': player_name,
         'prompt': prompt,
         'thoughts': parsed_thought
     }
@@ -52,11 +51,11 @@ def player_turn(
     except TypeError:
         message = 'I have a brain fart... I think I\'ll skip my turn.'
     
-    formatted_message = f'{player_id}: {message}'
+    formatted_message = f'{player_name}: {message}'
     print(formatted_message)
     conversation = conversation + '  \n' + formatted_message
 
-    chat_msg = f'{player_id}: {message}'
+    chat_msg = f'{player_name}: {message}'
     st.write(chat_msg)
     st.write(structured_thought)
 

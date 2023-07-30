@@ -29,9 +29,6 @@ def full_game(
     enriched_players = execute_all_actions(players)
     st.write(enriched_players)
 
-    # for player_id, player_role in self.players:
-    #     info = self.execute_card_action(player_id, player_role)
-
     st.markdown('#### Deliberation')
     conversation, thoughts = conversation_full(rounds, enriched_players, conversation, thoughts)
 

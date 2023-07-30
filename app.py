@@ -18,7 +18,7 @@ with col1:
     )
 
 # create configurable text inputs for player names
-players = init_players(players_n=4)
+players = init_players(players_n=5)
 
 with col2:
     player_names = []

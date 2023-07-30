@@ -34,7 +34,7 @@ def assign_player_roles(players: List) -> Dict[str, str]:
     Randomly assign roles to players
     '''
     
-    roles = ['Werewolf', 'Seer', 'Villager', 'Robber']
+    roles = ['Werewolf', 'Seer', 'Villager', 'Robber', 'Troublemaker']
     random.shuffle(roles)
     roles_dict = [{'true_role': role, 'starting_role': role} for role in roles]
 

@@ -2,10 +2,8 @@ import json
 from typing import Dict, Any
 
 from langchain import PromptTemplate
-from langchain.llms import OpenAI
 import streamlit as st
 
-from mechanics.utils.fetch_data import get_player_data
 from llms import call_llm
 
 def player_turn(
@@ -24,9 +22,9 @@ def player_turn(
 
     prompt = prompt_template.format(
         player_id=player_name,
-        player_type=player_data['role'],
-        player_team=player_data['team'],
-        player_goal=player_data['goal'],
+        player_type=player_data['starting_role'],
+        player_team=player_data['starting_team'],
+        player_goal=player_data['starting_goal'],
         info=player_data['knowledge'],
         conversation=conversation
     )

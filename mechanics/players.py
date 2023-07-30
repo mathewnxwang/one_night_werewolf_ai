@@ -36,12 +36,13 @@ def assign_player_roles(players: List) -> Dict[str, str]:
     
     roles = ['Werewolf', 'Seer', 'Villager', 'Robber']
     random.shuffle(roles)
-    roles_dict = [{'role': role} for role in roles]
+    roles_dict = [{'true_role': role, 'starting_role': role} for role in roles]
+
 
     players_enriched = dict(zip(players, roles_dict))
 
     for name, player_data in players_enriched.items():
-        role = player_data['role']
+        role = player_data['true_role']
         assignment_msg = f'{name} was assigned to the {role} role'
         st.write(assignment_msg)
         print(assignment_msg)
@@ -54,12 +55,13 @@ def enrich_player_data(players_enriched: Dict[str, Dict[str, Any]]) -> Dict[str,
     '''
 
     for name, data in players_enriched.items():
-        team = get_player_team(data['role'])
-        knowledge = get_player_knowledge(data['role'])
-        goal = get_player_goals(team)
+        true_team, starting_team = get_player_team(data['true_role'], data['starting_role'])
+        knowledge = get_player_knowledge(data['starting_role'])
+        starting_goal = get_player_goals(starting_team)
         
-        data['team'] = team
+        data['true_team'] = true_team
+        data['starting_team'] = starting_team
         data['knowledge'] = knowledge
-        data['goal'] = goal
+        data['starting_goal'] = starting_goal
 
     return players_enriched

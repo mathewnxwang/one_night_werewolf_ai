@@ -1,14 +1,23 @@
 from typing import Tuple
 
-def get_player_team(player_type: str) -> str:
+def get_player_team(true_role: str, known_role: str) -> str:
+    '''
+    Get the team based on the player role
+    '''
 
-    villager_values = ['Villager', 'Seer', 'Robber', 'Drunk']
-    werewolf_values = ['Werewolf', 'Seer Werewolf']
+    villager_values = ['Villager', 'Seer', 'Robber', 'Troublemaker']
 
-    if player_type in villager_values:
-        return 'villager'
-    elif player_type in werewolf_values:
-        return 'werewolf'
+    if true_role in villager_values:
+        true_team = 'villager'
+    else:
+        true_team = 'werewolf'
+    
+    if known_role in villager_values:
+        known_team = 'villager'
+    else:
+        known_team = 'werewolf'
+    
+    return true_team, known_team
 
 def get_player_knowledge(player_type: str) -> str:
     # if player_type == 'Seer':

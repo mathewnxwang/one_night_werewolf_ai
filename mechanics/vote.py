@@ -21,9 +21,9 @@ def player_vote(
     player_data = players[player_id]
     prompt = vote_template.format(
         player_id=player_id,
-        player_type=player_data['role'],
-        player_team=player_data['team'],
-        vote_goal=player_data['goal'],
+        player_type=player_data['starting_role'],
+        player_team=player_data['starting_team'],
+        vote_goal=player_data['starting_goal'],
         player_list=players_str,
         conversation=conversation
     )
@@ -55,8 +55,8 @@ def all_vote(
     else:
         eliminated_player = counts[0][0]
         eliminated_player_data = players[eliminated_player]
-        eliminated_role = eliminated_player_data['role']
-        losing_team = eliminated_player_data['team']
+        eliminated_role = eliminated_player_data['true_role']
+        losing_team = eliminated_player_data['true_team']
 
         if losing_team == 'villager':
             winning_team = 'werewolf'

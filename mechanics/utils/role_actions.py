@@ -19,12 +19,12 @@ def _get_random_player(players, player_id: str) -> Tuple[str, str]:
 
     return random_player_id, random_player_data
 
-def _get_name_from_role(players: Dict[str, Dict[str, Any]], role: str) -> str:
+def _get_name_from_role(players: Dict[str, Dict[str, Any]], true_role: str) -> str:
     '''
     Get the player name for the specified role
     '''
     for name, data in players.items():
-        if data['role'] == role:
+        if data['true_role'] == true_role:
             return name
     return None
 
@@ -34,7 +34,7 @@ def execute_seer_action(players: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[st
     '''
     seer_player_name = _get_name_from_role(players, 'Seer')
     target_player_name, target_player_data = _get_random_player(players, seer_player_name)
-    target_player_role = target_player_data['role']
+    target_player_role = target_player_data['true_role']
     knowledge = f'As the seer, you saw that {target_player_name} is a {target_player_role}.'
     players[seer_player_name]['knowledge'] = knowledge
 
@@ -55,13 +55,13 @@ def execute_robber_action(players: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[
     robber_player_name = _get_name_from_role(players, 'Robber')
     target_player_name, target_player_data = _get_random_player(players, robber_player_name)
 
-    target_player_role = target_player_data['role']
-    robber_player_update = {'role': target_player_role, 'team': target_player_data['team']}
+    target_player_role = target_player_data['true_role']
+    robber_player_update = {'true_role': target_player_role, 'true_team': target_player_data['true_team']}
     players[robber_player_name].update(robber_player_update)
     knowledge = f'You were previously the Robber. You robbed {target_player_name} who is a {target_player_role}. You are now a {target_player_role}.'
     players[robber_player_name]['knowledge'] = knowledge
 
-    target_player_update = {'role': 'Robber', 'team': 'villager'}
+    target_player_update = {'true_role': 'Robber', 'true_team': 'villager'}
     players[target_player_name].update(target_player_update)
 
     dev_msg = f'{robber_player_name}: {knowledge}'

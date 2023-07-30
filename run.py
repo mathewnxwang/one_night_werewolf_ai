@@ -5,6 +5,7 @@ import streamlit as st
 from mechanics.players import assign_player_roles, enrich_player_data
 from mechanics.vote import show_results
 from mechanics.conversation import conversation_full
+from mechanics.utils.role_actions import execute_all_actions
 
 def full_game(
     rounds: int,
@@ -29,6 +30,9 @@ def full_game(
     
     # enrich player data
     enriched_players = enrich_player_data(players)
+
+    # execute role actions
+    enriched_players = execute_all_actions(players)
     st.write(enriched_players)
 
     # for player_id, player_role in self.players:

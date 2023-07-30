@@ -34,11 +34,18 @@ def assign_player_roles(players: List) -> Dict[str, str]:
     Randomly assign roles to players
     '''
     
-    roles = ['Werewolf', 'Seer'] + ['Villager'] * 2
+    roles = ['Werewolf', 'Seer', 'Villager', 'Robber']
     random.shuffle(roles)
     roles_dict = [{'role': role} for role in roles]
 
     players_enriched = dict(zip(players, roles_dict))
+
+    for name, player_data in players_enriched.items():
+        role = player_data['role']
+        assignment_msg = f'{name} was assigned to the {role} role'
+        st.write(assignment_msg)
+        print(assignment_msg)
+    
     return players_enriched
 
 def enrich_player_data(players_enriched: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:

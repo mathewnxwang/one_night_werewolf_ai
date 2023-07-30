@@ -21,12 +21,6 @@ def full_game(
 
     # assign player roles
     players = assign_player_roles(players)
-
-    for name, player_data in players.items():
-        role = player_data['role']
-        assignment_msg = f'{name} was assigned to the {role} role'
-        st.write(assignment_msg)
-        print(assignment_msg)
     
     # enrich player data
     enriched_players = enrich_player_data(players)

@@ -1,11 +1,12 @@
 from langchain import PromptTemplate
+from langchain.chat_models import ChatOpenAI
 from langchain.llms import OpenAI
 
 call_llm = OpenAI(temperature=1)
 
 # Prompts
 
-deliberate_prompt = '''You are playing a social deduction game.
+deliberate_prompt = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
 Your name is {player_id}.
 You are a {player_type}.
 You are on the {player_team} team.
@@ -34,7 +35,7 @@ deliberate_template = PromptTemplate(
         'conversation'],
     template=deliberate_prompt)
 
-action_prompt = '''You are playing a social deduction game.
+action_prompt = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
 Your name is {player_id}.
 You are a {player_type}.
 You are on the {player_team} team.
@@ -63,7 +64,7 @@ action_template = PromptTemplate(
         'conversation'],
     template=action_prompt)
 
-vote_prompt = '''You are playing a social deduction game.
+vote_prompt = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
 There are 5 players: 3 villagers, 1 seer, and 1 werewolf.
 Your name is {player_id}.
 You are a {player_type}.

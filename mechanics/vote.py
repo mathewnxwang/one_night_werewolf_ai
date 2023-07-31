@@ -3,7 +3,8 @@ from typing import Any, Dict
 
 import streamlit as st
 
-from llms import call_llm, vote_template
+from ai.prompt_templates import vote_template
+from ai.llm import call_llm
 from mechanics.utils.fetch_data import get_player_data, get_player_team
 
 def player_vote(

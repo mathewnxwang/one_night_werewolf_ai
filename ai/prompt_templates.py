@@ -1,10 +1,49 @@
 from langchain import PromptTemplate
 from langchain.chat_models import ChatOpenAI
-from langchain.llms import OpenAI
 
-call_llm = OpenAI(temperature=1)
+synthesis_prompt = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
+Your name is {player_id}.
+You are a {player_type}.
+You are on the {player_team} team.
+The other players in the game are {players}.
+===
+Synthesize the Goal, Conversation, and Information into a thought process that you can use to decide what to say to the other players.
+===
+{few_shot_examples}
+===
+Goal: {player_goal}
+Conversation: {conversation}
+Information: {info}
+Thought Process: 
+'''
 
-# Prompts
+synthesis_template = PromptTemplate(
+    input_variables=[
+        'player_id', 'player_type', 'player_team', 'players', 'player_goal', 'conversation', 'info', 'few_shot_examples'
+        ],
+    template=synthesis_prompt)
+
+message_prompt = '''
+You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
+Your name is {player_id}.
+You are a {player_type}.
+You are on the {player_team} team.
+The other players in the game are {players}.
+===
+Thought Process: {thought_process}
+===
+Use the above thought process to decide what to say to the other players.
+===
+{conversation}
+{player_id}: 
+'''
+
+message_template = PromptTemplate(
+    input_variables=[
+        'player_id', 'player_type', 'player_team', 'players', 'thought_process', 'conversation'
+    ],
+    template=message_prompt
+)
 
 deliberate_prompt = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
 Your name is {player_id}.

@@ -1,6 +1,6 @@
 from typing import Any, Dict
 
-from llms import deliberate_template, action_template
+from ai.prompt_templates import deliberate_template, action_template
 from mechanics.turn import player_turn
 
 def conversation_round(
@@ -22,7 +22,7 @@ def conversation_round(
     # Every player contributes to the conversation once in order
     for player_name, player_data in players.items():        
         conversation, thoughts = player_turn(
-            player_name, player_data, prompt_template, conversation, thoughts
+            players, player_name, prompt_template, conversation, thoughts
         )
     
     return conversation, thoughts

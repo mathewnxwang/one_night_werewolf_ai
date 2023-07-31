@@ -1,60 +1,72 @@
 import json
-from typing import Dict, Any
+from typing import Any, Dict, Tuple
 
 from langchain import PromptTemplate
 import streamlit as st
 
-from llms import call_llm
+from ai.llm import call_llm
+from ai.prompt_templates import synthesis_template, message_template
+from ai.few_shot_examples import *
+
+def _get_player_response(player_name: str, prompt: PromptTemplate) -> Dict[str, Any]:
+    '''
+    Call LLM and structure response
+    '''
+    response = call_llm(prompt)
+    
+    structured_response = {'player_id': player_name, 'prompt': prompt, 'response': response}
+    print(structured_response)
+    
+    return structured_response
 
 def player_turn(
+    players,
     player_name: str,
-    player_data: Dict[str, Any],
     prompt_template: PromptTemplate,
     conversation: str,
     thoughts: list[dict]
-    ) -> None:
+    ) -> Tuple[str, Dict[str, Any]]:
     '''
     Generate and store thoughts and a conversation message for a player
     '''
+    player_data = players[player_name]
+    player_names_list = list(players.keys())
+    player_names_list.remove(player_name)
+    player_names_str = ', '.join(player_names_list)
 
-    thinking_msg = f'{player_name} is thinking...'
+    thinking_msg = f'{player_name} is collecting their thoughts...'
     st.write(thinking_msg)
 
-    prompt = prompt_template.format(
+    synthesis_prompt = synthesis_template.format(
         player_id=player_name,
         player_type=player_data['starting_role'],
         player_team=player_data['starting_team'],
+        players=player_names_str,
         player_goal=player_data['starting_goal'],
+        conversation=conversation,
         info=player_data['knowledge'],
+        few_shot_examples=''
+    )
+    thought_process = _get_player_response(player_name, synthesis_prompt)
+    st.write(thought_process)
+
+    deciding_msg = f'{player_name} is deciding on what to say...'
+    st.write(deciding_msg)
+    message_prompt = message_template.format(
+        player_id=player_name,
+        player_type=player_data['starting_role'],
+        player_team=player_data['starting_team'],
+        players=player_names_str,
+        thought_process=thought_process['response'],
         conversation=conversation
     )
-
-    raw_thought = call_llm(prompt)
-
-    try:
-        parsed_thought = json.loads(raw_thought)
-    except json.JSONDecodeError:
-        parsed_thought = 'I have a brain fart... I think I\'ll skip my turn.'
-    
-    structured_thought = {
-        'player_id': player_name,
-        'prompt': prompt,
-        'thoughts': parsed_thought
-    }
-    print(structured_thought)
-    thoughts.append(structured_thought)
-
-    try:
-        message = structured_thought['thoughts']['message']
-    except TypeError:
-        message = 'I have a brain fart... I think I\'ll skip my turn.'
-    
+    message = _get_player_response(player_name, message_prompt)['response']
     formatted_message = f'{player_name}: {message}'
-    print(formatted_message)
+    st.write(formatted_message)
+
+    thoughts.append(thought_process)
     conversation = conversation + '  \n' + formatted_message
 
     chat_msg = f'{player_name}: {message}'
-    st.write(chat_msg)
-    st.write(structured_thought)
 
     return conversation, thoughts

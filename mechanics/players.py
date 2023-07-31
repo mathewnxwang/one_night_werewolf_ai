@@ -57,7 +57,7 @@ def enrich_player_data(players_enriched: Dict[str, Dict[str, Any]]) -> Dict[str,
     for name, data in players_enriched.items():
         true_team, starting_team = get_player_team(data['true_role'], data['starting_role'])
         knowledge = get_player_knowledge(data['starting_role'])
-        starting_goal = get_player_goals(starting_team)
+        starting_goal = get_player_goals(starting_team)[0]
         
         data['true_team'] = true_team
         data['starting_team'] = starting_team

@@ -14,9 +14,9 @@ def conversation_round(
     '''
 
     # Steer players toward making pointed contributions later in the game
-    if round_counter == 0:
+    if round_counter == 1:
         prompt_template = deliberate_template
-    elif round_counter >= 1:
+    elif round_counter >= 2:
         prompt_template = action_template
         
     # Every player contributes to the conversation once in order

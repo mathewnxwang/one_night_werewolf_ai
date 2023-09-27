@@ -6,7 +6,7 @@ import streamlit as st
 
 from ai.llm import call_llm
 from ai.prompt_templates import synthesis_template, message_template
-from ai.few_shot_examples import *
+from ai.few_shot_examples import few_shot_mapping
 
 def _get_player_response(player_name: str, prompt: PromptTemplate) -> Dict[str, Any]:
     '''
@@ -14,10 +14,15 @@ def _get_player_response(player_name: str, prompt: PromptTemplate) -> Dict[str, 
     '''
     response = call_llm(prompt)
     
-    structured_response = {'player_id': player_name, 'prompt': prompt, 'response': response}
-    print(structured_response)
-    
+    structured_response = {'player_id': player_name, 'prompt': prompt, 'response': response}    
     return structured_response
+
+def _get_few_shot_examples(player_data: Dict[str, Any]) -> str:
+    try:
+        examples = few_shot_mapping[player_data['starting_role']]
+    except KeyError:
+        return ''
+    return examples
 
 def player_turn(
     players,
@@ -37,6 +42,8 @@ def player_turn(
     thinking_msg = f'{player_name} is collecting their thoughts...'
     st.write(thinking_msg)
 
+    few_shot_examples = _get_few_shot_examples(player_data)
+
     synthesis_prompt = synthesis_template.format(
         player_id=player_name,
         player_type=player_data['starting_role'],
@@ -45,7 +52,7 @@ def player_turn(
         player_goal=player_data['starting_goal'],
         conversation=conversation,
         info=player_data['knowledge'],
-        few_shot_examples=''
+        few_shot_examples=few_shot_examples
     )
     thought_process = _get_player_response(player_name, synthesis_prompt)
     st.write(thought_process)
@@ -60,7 +67,10 @@ def player_turn(
         thought_process=thought_process['response'],
         conversation=conversation
     )
-    message = _get_player_response(player_name, message_prompt)['response']
+    message_dict = _get_player_response(player_name, message_prompt)
+    st.write(message_dict)
+
+    message = message_dict['response']
     formatted_message = f'{player_name}: {message}'
     st.write(formatted_message)
 

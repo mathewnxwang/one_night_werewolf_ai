@@ -5,6 +5,12 @@ import streamlit as st
 
 class RoleActions:
 
+    def execute_all_actions(self, players: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
+        players = self.execute_seer_action(players)
+        players = self.execute_robber_action(players)
+        players = self.execute_troublemaker_action(players)
+        return players
+
     def _get_random_player(self, players, player_id: str) -> str:
         '''
         Get player name for a random player that is not the specified one
@@ -100,10 +106,4 @@ class RoleActions:
         dev_msg = f'{troublemaker_player_name}: {knowledge}'
         st.write(dev_msg)
 
-        return players
-
-    def execute_all_actions(self, players: Dict[str, Dict[str, Any]]) -> Dict[str, Dict[str, Any]]:
-        players = self.execute_seer_action(players)
-        players = self.execute_robber_action(players)
-        players = self.execute_troublemaker_action(players)
         return players

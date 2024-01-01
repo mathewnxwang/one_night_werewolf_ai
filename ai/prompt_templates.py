@@ -1,11 +1,13 @@
+import streamlit as st
 from langchain import PromptTemplate
 
-synthesis_prompt = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
+INTRO = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
 Your name is {player_id}.
 You are a {player_type}.
 You are on the {player_team} team.
 The other players in the game are {players}.
-===
+'''
+synthesis_prompt = INTRO + '''===
 Synthesize the Goal, Conversation, and Information into a thought process that you can use to decide what to say to the other players.
 ===
 Goal: {player_goal}
@@ -20,13 +22,7 @@ synthesis_template = PromptTemplate(
         ],
     template=synthesis_prompt)
 
-message_prompt = '''
-You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
-Your name is {player_id}.
-You are a {player_type}.
-You are on the {player_team} team.
-The other players in the game are {players}.
-===
+message_prompt = INTRO + '''===
 Thought Process: {thought_process}
 ===
 Use the above thought process to decide what to say to the other players.
@@ -42,11 +38,7 @@ message_template = PromptTemplate(
     template=message_prompt
 )
 
-deliberate_prompt = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
-Your name is {player_id}.
-You are a {player_type}.
-You are on the {player_team} team.
-=====
+deliberate_prompt = INTRO + '''===
 The conversation so far: {conversation}
 =====
 You also have the following information: {info}
@@ -71,11 +63,7 @@ deliberate_template = PromptTemplate(
         'conversation'],
     template=deliberate_prompt)
 
-action_prompt = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
-Your name is {player_id}.
-You are a {player_type}.
-You are on the {player_team} team.
-=====
+action_prompt = INTRO + '''===
 The conversation so far: {conversation}
 =====
 You also have the following information: {info}
@@ -100,11 +88,7 @@ action_template = PromptTemplate(
         'conversation'],
     template=action_prompt)
 
-vote_prompt = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
-There are 5 players: 3 villagers, 1 seer, and 1 werewolf.
-Your name is {player_id}.
-You are a {player_type}.
-You are on the {player_team} team.
+vote_prompt = INTRO + '''===
 Your goal is to {vote_goal}.
 Based on the following conversation, vote for the player to eliminate out of the following options: {player_list}
 =====

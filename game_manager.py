@@ -11,16 +11,16 @@ from prompt_templates import (
     message_template,
     synthesis_template,
     vote_template)
-from players import PlayerManager
+from players_manager import PlayersManager
 from role_actions import RoleActions
 
 class GameManager:
     def __init__(self):
 
-        player_manager = PlayerManager(players_n=5)
+        players_manager = PlayersManager(players_n=5)
         role_actions = RoleActions()
 
-        self.player_data = player_manager.construct_player_data()
+        self.player_data = players_manager.construct_player_data()
         self.player_data = role_actions.execute_all_actions(self.player_data)
         st.write(self.player_data)
 

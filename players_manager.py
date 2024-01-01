@@ -3,7 +3,7 @@ from typing import Any, Dict, List, Tuple
 
 import streamlit as st
 
-class PlayerManager:
+class PlayersManager:
     def __init__(self, players_n: int):
         self.player_names = [
             'Morty',

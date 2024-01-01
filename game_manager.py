@@ -4,15 +4,15 @@ from typing import Any, Dict
 from langchain import PromptTemplate
 import streamlit as st
 
-from ai.llm import call_llm
-from ai.prompt_templates import (
+from llm import call_llm
+from prompt_templates import (
     action_template,
     deliberate_template,
     message_template,
     synthesis_template,
     vote_template)
-from mechanics.players import PlayerManager
-from mechanics.utils.role_actions import RoleActions
+from players import PlayerManager
+from role_actions import RoleActions
 
 class GameManager:
     def __init__(self):

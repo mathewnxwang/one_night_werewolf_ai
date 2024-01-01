@@ -1,7 +1,6 @@
 import streamlit as st
 
-from mechanics.players import PlayerManager
-from run import full_game
+from game_manager import GameManager
 
 page_title = 'One Night Werewolf, AI Version'
 st.set_page_config(page_title=page_title)
@@ -29,4 +28,7 @@ with run_col2:
 # Execute game
 
 if run or dev_run:
-    full_game(rounds_n)
+    st.markdown('#### Deliberation')
+    game_manager = GameManager()
+    game_manager.conversation_full(rounds_n)
+    game_manager.show_results()

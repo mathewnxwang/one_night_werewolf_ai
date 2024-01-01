@@ -6,13 +6,11 @@ import streamlit as st
 class PlayerManager:
     def __init__(self, players_n: int):
         self.player_names = [
-            'Saul Goodman',
-            'Kim Wexler',
-            'Gus Fring',
-            'Mike Ermantrout',
-            'Howard Hamlin',
-            'Nacho Vargas',
-            'Lalo Salomanca']
+            'Morty',
+            'Rick',
+            'Summer',
+            'Beth',
+            'Jerry']
         self.player_names = self.player_names[:players_n]
 
         self.roles = ['Werewolf', 'Seer', 'Villager', 'Robber', 'Troublemaker']

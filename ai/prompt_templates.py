@@ -1,5 +1,4 @@
 from langchain import PromptTemplate
-from langchain.chat_models import ChatOpenAI
 
 synthesis_prompt = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
 Your name is {player_id}.
@@ -9,8 +8,6 @@ The other players in the game are {players}.
 ===
 Synthesize the Goal, Conversation, and Information into a thought process that you can use to decide what to say to the other players.
 ===
-{few_shot_examples}
-===
 Goal: {player_goal}
 Conversation: {conversation}
 Information: {info}
@@ -19,7 +16,7 @@ Thought Process:
 
 synthesis_template = PromptTemplate(
     input_variables=[
-        'player_id', 'player_type', 'player_team', 'players', 'player_goal', 'conversation', 'info', 'few_shot_examples'
+        'player_id', 'player_type', 'player_team', 'players', 'player_goal', 'conversation', 'info'
         ],
     template=synthesis_prompt)
 

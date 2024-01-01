@@ -104,11 +104,3 @@ class PlayersManager:
         #     team = 'villager'
         #     traded_player = self.execute_card_action(player_id, player_type)
         #     traded_player_name, traded_player_role = traded_player
-
-    def _filter_dict(var_dict: Dict[str, str], n: int) -> Dict[str, str]:
-        '''
-        filter a dictionary to N length
-        '''
-        var_list = list(var_dict.items())
-        filtered = dict(var_list[:n])
-        return filtered

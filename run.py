@@ -7,10 +7,7 @@ from mechanics.vote import show_results
 from mechanics.conversation import conversation_full
 from mechanics.utils.role_actions import RoleActions
 
-def full_game(
-    rounds: int,
-    players: List[str]
-    ):
+def full_game(rounds: int):
     '''
     Execute full conversation and vote
     '''

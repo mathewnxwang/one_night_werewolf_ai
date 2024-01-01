@@ -7,22 +7,21 @@ You are a {player_type}.
 You are on the {player_team} team.
 The other players in the game are {players}.
 '''
-synthesis_prompt = INTRO + '''===
+
+SHORT_INTRO = 'You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.'
+
+synthesis_prompt = SHORT_INTRO + '''{player_intro}
+===
 Synthesize the Goal, Conversation, and Information into a thought process that you can use to decide what to say to the other players.
 ===
-Goal: {player_goal}
-Conversation: {conversation}
-Information: {info}
+{player_info}
 Thought Process: 
 '''
 
-synthesis_template = PromptTemplate(
-    input_variables=[
-        'player_id', 'player_type', 'player_team', 'players', 'player_goal', 'conversation', 'info'
-        ],
-    template=synthesis_prompt)
+synthesis_template = PromptTemplate(input_variables=['player_intro', 'player_info'], template=synthesis_prompt)
 
-message_prompt = INTRO + '''===
+message_prompt = SHORT_INTRO + '''{player_intro}
+===
 Thought Process: {thought_process}
 ===
 Use the above thought process to decide what to say to the other players.
@@ -31,12 +30,7 @@ Use the above thought process to decide what to say to the other players.
 {player_id}: 
 '''
 
-message_template = PromptTemplate(
-    input_variables=[
-        'player_id', 'player_type', 'player_team', 'players', 'thought_process', 'conversation'
-    ],
-    template=message_prompt
-)
+message_template = PromptTemplate(input_variables=['player_intro', 'thought_process', 'conversation', 'player_id'], template=message_prompt)
 
 deliberate_prompt = INTRO + '''===
 The conversation so far: {conversation}
@@ -58,6 +52,7 @@ deliberate_template = PromptTemplate(
         'player_id',
         'player_type',
         'player_team',
+        'players',
         'player_goal',
         'info',
         'conversation'],
@@ -83,6 +78,7 @@ action_template = PromptTemplate(
         'player_id',
         'player_type',
         'player_team',
+        'players',
         'player_goal',
         'info',
         'conversation'],
@@ -102,6 +98,7 @@ vote_template = PromptTemplate(
         'player_id',
         'player_type',
         'player_team',
+        'players',
         'vote_goal',
         'player_list',
         'conversation'],

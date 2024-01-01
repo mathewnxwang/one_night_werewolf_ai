@@ -26,6 +26,7 @@ def player_turn(
     '''
     Generate and store thoughts and a conversation message for a player
     '''
+    
     player_data = players[player_name]
     player_names_list = list(players.keys())
     player_names_list.remove(player_name)
@@ -34,14 +35,17 @@ def player_turn(
     thinking_msg = f'{player_name} is collecting their thoughts...'
     st.write(thinking_msg)
 
+    PROMPT_PLAYER_INTRO = f'''Your name is {player_name}.
+You are a {player_data['starting_role']}.
+You are on the {player_data['starting_team']} team.
+The other players in the game are {player_names_str}.'''
+
+    PROMPT_SYNTHESIS_INFO = f'''Goal: {player_data['starting_goal']}
+Conversation: {conversation}
+Information: {player_data['knowledge']}'''
+
     synthesis_prompt = synthesis_template.format(
-        player_id=player_name,
-        player_type=player_data['starting_role'],
-        player_team=player_data['starting_team'],
-        players=player_names_str,
-        player_goal=player_data['starting_goal'],
-        conversation=conversation,
-        info=player_data['knowledge'],
+        player_intro=PROMPT_PLAYER_INTRO, player_info=PROMPT_SYNTHESIS_INFO
     )
     thought_process = _get_player_response(player_name, synthesis_prompt)
     st.write(thought_process)
@@ -49,12 +53,10 @@ def player_turn(
     deciding_msg = f'{player_name} is deciding on what to say...'
     st.write(deciding_msg)
     message_prompt = message_template.format(
-        player_id=player_name,
-        player_type=player_data['starting_role'],
-        player_team=player_data['starting_team'],
-        players=player_names_str,
+        player_intro=PROMPT_PLAYER_INTRO,
         thought_process=thought_process['response'],
-        conversation=conversation
+        conversation=conversation,
+        player_id=player_name
     )
     message_dict = _get_player_response(player_name, message_prompt)
     st.write(message_dict)

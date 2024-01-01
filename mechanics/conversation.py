@@ -18,7 +18,7 @@ def conversation_round(
         prompt_template = deliberate_template
     elif round_counter >= 2:
         prompt_template = action_template
-        
+
     # Every player contributes to the conversation once in order
     for player_name, player_data in players.items():        
         conversation, thoughts = player_turn(

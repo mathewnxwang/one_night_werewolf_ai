@@ -14,11 +14,8 @@ class PlayersManager:
         self.player_names = self.player_names[:players_n]
 
         self.roles = ['Werewolf', 'Seer', 'Villager', 'Robber', 'Troublemaker']
-
-    def construct_player_data(self):
         self.players_data = self.assign_player_roles()
         self.enrich_player_data()
-        return self.players_data
 
     def assign_player_roles(self) -> Dict:
         '''

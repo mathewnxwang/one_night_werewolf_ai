@@ -20,7 +20,7 @@ class GameManager:
         players_manager = PlayersManager(players_n=5)
         role_actions = RoleActions()
 
-        self.player_data = players_manager.construct_player_data()
+        self.player_data = players_manager.players_data
         self.player_data = role_actions.execute_all_actions(self.player_data)
         st.write(self.player_data)
 

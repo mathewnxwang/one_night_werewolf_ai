@@ -10,7 +10,8 @@ The other players in the game are {players}.
 
 SHORT_INTRO = 'You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.'
 
-synthesis_prompt = SHORT_INTRO + '''{player_intro}
+synthesis_prompt = SHORT_INTRO + '''
+{player_intro}
 ===
 Synthesize the Goal, Conversation, and Information into a thought process that you can use to decide what to say to the other players.
 ===
@@ -20,7 +21,8 @@ Thought Process:
 
 synthesis_template = PromptTemplate(input_variables=['player_intro', 'player_info'], template=synthesis_prompt)
 
-message_prompt = SHORT_INTRO + '''{player_intro}
+message_prompt = SHORT_INTRO + '''
+{player_intro}
 ===
 Thought Process: {thought_process}
 ===
@@ -84,7 +86,9 @@ action_template = PromptTemplate(
         'conversation'],
     template=action_prompt)
 
-vote_prompt = INTRO + '''===
+vote_prompt = SHORT_INTRO + '''
+{player_intro}
+===
 Your goal is to {vote_goal}.
 Based on the following conversation, vote for the player to eliminate out of the following options: {player_list}
 =====
@@ -94,12 +98,5 @@ Name the player to eliminate:
 '''
 
 vote_template = PromptTemplate(
-    input_variables=[
-        'player_id',
-        'player_type',
-        'player_team',
-        'players',
-        'vote_goal',
-        'player_list',
-        'conversation'],
-    template=vote_prompt)
+    input_variables=['player_intro', 'vote_goal', 'player_list', 'conversation'], template=vote_prompt
+    )

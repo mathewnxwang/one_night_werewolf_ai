@@ -2,10 +2,10 @@ from typing import List
 
 import streamlit as st
 
-from mechanics.players import assign_player_roles, enrich_player_data
+from mechanics.players import PlayerManager
 from mechanics.vote import show_results
 from mechanics.conversation import conversation_full
-from mechanics.utils.role_actions import execute_all_actions
+from mechanics.utils.role_actions import RoleActions
 
 def full_game(
     rounds: int,
@@ -19,14 +19,9 @@ def full_game(
     conversation = ''
     thoughts = []
 
-    # assign player roles
-    players = assign_player_roles(players)
-    
-    # enrich player data
-    enriched_players = enrich_player_data(players)
-
-    # execute role actions
-    enriched_players = execute_all_actions(players)
+    player_manager = PlayerManager(players_n=5)
+    player_data = player_manager.construct_player_data()
+    enriched_players = RoleActions().execute_all_actions(player_data)
     st.write(enriched_players)
 
     st.markdown('#### Deliberation')

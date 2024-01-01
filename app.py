@@ -1,6 +1,6 @@
 import streamlit as st
 
-from mechanics.players import init_players
+from mechanics.players import PlayerManager
 from run import full_game
 
 page_title = 'One Night Werewolf, AI Version'
@@ -18,7 +18,8 @@ with col1:
     )
 
 # create configurable text inputs for player names
-players = init_players(players_n=5)
+player_manager = PlayerManager(players_n=5)
+players = player_manager.player_names
 
 with col2:
     player_names = []

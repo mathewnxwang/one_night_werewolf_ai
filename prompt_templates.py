@@ -2,7 +2,7 @@ import streamlit as st
 from langchain import PromptTemplate
 
 INTRO = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
-Your name is {player_id}.
+Your name is {player_id}. {player_description}
 You are a {player_type}.
 You are on the {player_team} team.
 The other players in the game are {players}.

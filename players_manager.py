@@ -51,18 +51,15 @@ class PlayersManager:
         '''
         Get the team based on the player role
         '''
-
-        villager_values = ['Villager', 'Seer', 'Robber', 'Troublemaker']
-
-        if true_role in villager_values:
-            true_team = 'villager'
-        else:
-            true_team = 'werewolf'
-        
-        if known_role in villager_values:
-            known_team = 'villager'
-        else:
-            known_team = 'werewolf'
+        team_mapping = {
+            'Villager': 'villager',
+            'Seer': 'villager',
+            'Robber': 'villager',
+            'Troublemaker': 'villager',
+            'Werewolf': 'werewolf'
+        }
+        true_team = team_mapping.get(true_role)
+        known_team = team_mapping.get(known_role)
         
         return true_team, known_team
 
@@ -72,14 +69,17 @@ class PlayersManager:
         return
 
     def get_player_goals(self, player_team: str) -> Tuple[str, str]:
-
-        if player_team == 'villager':
-            player_goal = '''What can I say to find out who the werewolf is?'''
-            vote_goal = '''Vote for the player who you think is the werewolf.'''
-        elif player_team == 'werewolf':
-            player_goal = '''What can I say to prevent the other players from finding out that I'm the werewolf?'''
-            vote_goal = '''Vote for a player who is not the werewolf.'''
-        
+        goals_mapping = {
+            'villager': (
+                'What can I say to find out who the werewolf is?',
+                'Vote for the player who you think is the werewolf.'
+            ),
+            'werewolf': (
+                'What can I say to prevent the other players from finding out that I\'m the werewolf?',
+                'Vote for a player who is not the werewolf.'
+            )
+        }
+        player_goal, vote_goal = goals_mapping.get(player_team)
         return player_goal, vote_goal
 
     def get_player_data(self, player_type: str) -> Tuple[str, str, str, str]:

@@ -8,9 +8,9 @@ from llm import call_llm
 from prompt_templates import (
     action_template,
     deliberate_template,
-    message_template,
-    synthesis_template,
-    vote_template)
+    MESSAGE_PROMPT,
+    SYNTHESIS_PROMPT,
+    VOTE_PROMPT)
 from players_manager import PlayersManager
 from role_actions import RoleActions
 
@@ -50,13 +50,12 @@ class GameManager:
 
         # Every player contributes to the conversation once in order
         for player_name, player_i_data in self.player_data.items():        
-            self.player_turn(player_i_data, player_name, prompt_template)
+            self.player_turn(player_i_data, player_name)
 
     def player_turn(
         self,
         player_i_data,
         player_name: str,
-        prompt_template: PromptTemplate,
         ) -> None:
         '''
         Generate and store thoughts and a conversation message for a player
@@ -68,7 +67,7 @@ class GameManager:
         thinking_msg = f'{player_name} is collecting their thoughts...'
         st.write(thinking_msg)
 
-        PROMPT_PLAYER_INTRO = f'''Your name is {player_name}.
+        PROMPT_PLAYER_INTRO = f'''You are {player_name} from the TV show Rick and Morty, and you speak like them.
 You are a {player_i_data['starting_role']}.
 You are on the {player_i_data['starting_team']} team.
 The other players in the game are {player_names_str}.'''
@@ -77,7 +76,7 @@ The other players in the game are {player_names_str}.'''
 Conversation: {self.conversation}
 Information: {player_i_data['knowledge']}'''
 
-        synthesis_prompt = synthesis_template.format(
+        synthesis_prompt = SYNTHESIS_PROMPT.format(
             player_intro=PROMPT_PLAYER_INTRO, player_info=PROMPT_SYNTHESIS_INFO
         )
         thought_process = self._get_player_response(player_name, synthesis_prompt)
@@ -85,7 +84,7 @@ Information: {player_i_data['knowledge']}'''
 
         deciding_msg = f'{player_name} is deciding on what to say...'
         st.write(deciding_msg)
-        message_prompt = message_template.format(
+        message_prompt = MESSAGE_PROMPT.format(
             player_intro=PROMPT_PLAYER_INTRO,
             thought_process=thought_process['response'],
             conversation=self.conversation,
@@ -103,7 +102,7 @@ Information: {player_i_data['knowledge']}'''
 
         chat_msg = f'{player_name}: {message}'
 
-    def _get_player_response(self, player_name: str, prompt: PromptTemplate) -> Dict[str, Any]:
+    def _get_player_response(self, player_name: str, prompt: str) -> Dict[str, Any]:
         '''
         Call LLM and structure response
         '''
@@ -126,7 +125,7 @@ Information: {player_i_data['knowledge']}'''
 You are a {player_i_data['starting_role']}.
 You are on the {player_i_data['starting_team']} team.'''
 
-        prompt = vote_template.format(
+        prompt = VOTE_PROMPT.format(
             player_intro=PROMPT_PLAYER_INTRO,
             vote_goal=player_i_data['starting_goal'],
             player_list=players_str,

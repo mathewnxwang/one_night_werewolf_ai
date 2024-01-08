@@ -2,7 +2,7 @@ import streamlit as st
 from langchain import PromptTemplate
 
 INTRO = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
-Your name is {player_id}. {player_description}
+You are {player_id} from the TV show Rick and Morty, and you speak like them.
 You are a {player_type}.
 You are on the {player_team} team.
 The other players in the game are {players}.
@@ -10,29 +10,31 @@ The other players in the game are {players}.
 
 SHORT_INTRO = 'You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.'
 
-synthesis_prompt = SHORT_INTRO + '''
+SYNTHESIS_PROMPT = SHORT_INTRO + '''
 {player_intro}
 ===
 Synthesize the Goal, Conversation, and Information into a thought process that you can use to decide what to say to the other players.
+Limit your thought process to 3 sentences at most.
 ===
 {player_info}
 Thought Process: 
 '''
 
-synthesis_template = PromptTemplate(input_variables=['player_intro', 'player_info'], template=synthesis_prompt)
+synthesis_template = PromptTemplate(input_variables=['player_intro', 'player_info'], template=SYNTHESIS_PROMPT)
 
-message_prompt = SHORT_INTRO + '''
+MESSAGE_PROMPT = SHORT_INTRO + '''
 {player_intro}
 ===
 Thought Process: {thought_process}
 ===
 Use the above thought process to decide what to say to the other players.
+Limit your message to 3 sentences at most.
 ===
 {conversation}
 {player_id}: 
 '''
 
-message_template = PromptTemplate(input_variables=['player_intro', 'thought_process', 'conversation', 'player_id'], template=message_prompt)
+message_template = PromptTemplate(input_variables=['player_intro', 'thought_process', 'conversation', 'player_id'], template=MESSAGE_PROMPT)
 
 deliberate_prompt = INTRO + '''===
 The conversation so far: {conversation}
@@ -86,7 +88,7 @@ action_template = PromptTemplate(
         'conversation'],
     template=action_prompt)
 
-vote_prompt = SHORT_INTRO + '''
+VOTE_PROMPT = SHORT_INTRO + '''
 {player_intro}
 ===
 Your goal is to {vote_goal}.
@@ -98,5 +100,5 @@ Name the player to eliminate:
 '''
 
 vote_template = PromptTemplate(
-    input_variables=['player_intro', 'vote_goal', 'player_list', 'conversation'], template=vote_prompt
+    input_variables=['player_intro', 'vote_goal', 'player_list', 'conversation'], template=VOTE_PROMPT
     )

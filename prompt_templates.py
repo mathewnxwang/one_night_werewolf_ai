@@ -1,5 +1,4 @@
 import streamlit as st
-from langchain import PromptTemplate
 
 INTRO = '''You are playing a simplified version of the social deduction game One Night Ultimate Werewolf.
 You are {player_id} from the TV show Rick and Morty, and you speak like them.
@@ -19,9 +18,6 @@ Limit your thought process to 3 sentences at most.
 {player_info}
 Thought Process: 
 '''
-
-synthesis_template = PromptTemplate(input_variables=['player_intro', 'player_info'], template=SYNTHESIS_PROMPT)
-
 MESSAGE_PROMPT = SHORT_INTRO + '''
 {player_intro}
 ===
@@ -33,8 +29,6 @@ Limit your message to 3 sentences at most.
 {conversation}
 {player_id}: 
 '''
-
-message_template = PromptTemplate(input_variables=['player_intro', 'thought_process', 'conversation', 'player_id'], template=MESSAGE_PROMPT)
 
 deliberate_prompt = INTRO + '''===
 The conversation so far: {conversation}
@@ -51,17 +45,6 @@ Accomplish the following five tasks:
 Return a JSON object with the 5 keys of goal, synthesis, truth, lie, and message.
 '''
 
-deliberate_template = PromptTemplate(
-    input_variables=[
-        'player_id',
-        'player_type',
-        'player_team',
-        'players',
-        'player_goal',
-        'info',
-        'conversation'],
-    template=deliberate_prompt)
-
 action_prompt = INTRO + '''===
 The conversation so far: {conversation}
 =====
@@ -77,17 +60,6 @@ Accomplish the following five tasks:
 Return a JSON object with the 5 keys of goal, synthesis, defend, accuse, and message.
 '''
 
-action_template = PromptTemplate(
-    input_variables=[
-        'player_id',
-        'player_type',
-        'player_team',
-        'players',
-        'player_goal',
-        'info',
-        'conversation'],
-    template=action_prompt)
-
 VOTE_PROMPT = SHORT_INTRO + '''
 {player_intro}
 ===
@@ -99,6 +71,3 @@ Based on the following conversation, vote for the player to eliminate out of the
 Name the player to eliminate: 
 '''
 
-vote_template = PromptTemplate(
-    input_variables=['player_intro', 'vote_goal', 'player_list', 'conversation'], template=VOTE_PROMPT
-    )

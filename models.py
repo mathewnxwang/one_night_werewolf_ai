@@ -1,4 +1,4 @@
-from elevenlabs import generate, voices
+# from elevenlabs import generate, voices
 import openai
 
 def call_llm(user_prompt: str, model: str = 'gpt-3.5-turbo') -> str:
@@ -12,6 +12,6 @@ def call_llm(user_prompt: str, model: str = 'gpt-3.5-turbo') -> str:
     message = response.choices[0].message.content
     return message
 
-voices = voices()
-voice_names = [voice.name for voice in voices]
-print(voice_names)
+# voices = voices()
+# voice_names = [voice.name for voice in voices]
+# print(voice_names)

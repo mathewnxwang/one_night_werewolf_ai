@@ -1,13 +1,10 @@
 from collections import Counter
 from typing import Any, Dict
 
-from langchain import PromptTemplate
 import streamlit as st
 
-from llm import call_llm
+from models import call_llm
 from prompt_templates import (
-    action_template,
-    deliberate_template,
     MESSAGE_PROMPT,
     SYNTHESIS_PROMPT,
     VOTE_PROMPT)
@@ -44,9 +41,9 @@ class GameManager:
 
         # Steer players toward making pointed contributions later in the game
         if round_counter == 1:
-            prompt_template = deliberate_template
+            pass # use a template that steers a player to deliberate
         elif round_counter >= 2:
-            prompt_template = action_template
+            pass # use a template that steers a player to take action
 
         # Every player contributes to the conversation once in order
         for player_name, player_i_data in self.player_data.items():        

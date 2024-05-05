@@ -1,0 +1,17 @@
+[tool.poetry]
+name = "one-night-werewolf-ai"
+version = "0.1.0"
+description = ""
+authors = ["Mathew Wang"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+streamlit = "^1.34.0"
+openai = "^1.25.2"
+elevenlabs = "^1.2.1"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

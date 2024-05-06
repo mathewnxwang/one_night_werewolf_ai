@@ -3,7 +3,7 @@ from typing import Any, Dict
 
 import streamlit as st
 
-from models import call_llm
+from models import LLMManager
 from prompt_templates import (
     MESSAGE_PROMPT,
     SYNTHESIS_PROMPT,
@@ -23,6 +23,8 @@ class GameManager:
 
         self.conversation = ''
         self.thoughts = []
+
+        self.llm_manager = LLMManager()
 
     def conversation_full(self, rounds: int) -> None:
         '''
@@ -103,7 +105,7 @@ Information: {player_i_data['knowledge']}'''
         '''
         Call LLM and structure response
         '''
-        response = call_llm(prompt)
+        response = self.llm_manager.call_llm(prompt)
         
         structured_response = {'player_id': player_name, 'prompt': prompt, 'response': response}    
         return structured_response
@@ -129,7 +131,7 @@ You are on the {player_i_data['starting_team']} team.'''
             conversation=self.conversation
         )
 
-        vote = call_llm(prompt)
+        vote = self.llm_manager.call_llm(prompt)
         return vote
 
     def all_vote(self):

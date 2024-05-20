@@ -8,18 +8,16 @@ from prompt_templates import (
     MESSAGE_PROMPT,
     SYNTHESIS_PROMPT,
     VOTE_PROMPT)
-from players_manager import PlayersManager
-from role_actions import RoleActions
+from players_manager import ActionManager, Player, PlayersManager, PlayerNames, Roles
 
 class GameManager:
     def __init__(self):
 
-        players_manager = PlayersManager(players_n=5)
-        role_actions = RoleActions()
+        self.players_manager = PlayersManager(PlayerNames, Roles)
+        self.action_manager = ActionManager(self.players_manager.all_players)
+        self.action_manager.execute_all_actions()
 
-        self.player_data = players_manager.players_data
-        self.player_data = role_actions.execute_all_actions(self.player_data)
-        st.write(self.player_data)
+        st.write(self.players_manager.all_players)
 
         self.conversation = ''
         self.thoughts = []
@@ -48,58 +46,54 @@ class GameManager:
             pass # use a template that steers a player to take action
 
         # Every player contributes to the conversation once in order
-        for player_name, player_i_data in self.player_data.items():        
-            self.player_turn(player_i_data, player_name)
+        for player in self.players_manager.all_players.players:
+            self.player_turn(player)
 
-    def player_turn(
-        self,
-        player_i_data,
-        player_name: str,
-        ) -> None:
+    def player_turn(self, player: Player) -> None:
         '''
         Generate and store thoughts and a conversation message for a player
         '''
-        player_names_list = list(self.player_data.keys())
-        player_names_list.remove(player_name)
+        player_names_list = [player.name for player in self.players_manager.all_players.players]
+        player_names_list.remove(player.name)
         player_names_str = ', '.join(player_names_list)
 
-        thinking_msg = f'{player_name} is collecting their thoughts...'
+        thinking_msg = f'{player.name} is collecting their thoughts...'
         st.write(thinking_msg)
 
-        PROMPT_PLAYER_INTRO = f'''You are {player_name} from the TV show Rick and Morty, and you speak like them.
-You are a {player_i_data['starting_role']}.
-You are on the {player_i_data['starting_team']} team.
+        PROMPT_PLAYER_INTRO = f'''You are {player.name} from the TV show Rick and Morty, and you speak like them.
+You are a {player.starting_role}.
+You are on the {player.known_team} team.
 The other players in the game are {player_names_str}.'''
 
-        PROMPT_SYNTHESIS_INFO = f'''Goal: {player_i_data['starting_goal']}
+        PROMPT_SYNTHESIS_INFO = f'''Goal: {player.starting_goal}
 Conversation: {self.conversation}
-Information: {player_i_data['knowledge']}'''
+Information: {player.knowledge}'''
 
         synthesis_prompt = SYNTHESIS_PROMPT.format(
             player_intro=PROMPT_PLAYER_INTRO, player_info=PROMPT_SYNTHESIS_INFO
         )
-        thought_process = self._get_player_response(player_name, synthesis_prompt)
+        thought_process = self._get_player_response(player.name, synthesis_prompt)
         st.write(thought_process)
 
-        deciding_msg = f'{player_name} is deciding on what to say...'
+        deciding_msg = f'{player.name} is deciding on what to say...'
         st.write(deciding_msg)
         message_prompt = MESSAGE_PROMPT.format(
             player_intro=PROMPT_PLAYER_INTRO,
             thought_process=thought_process['response'],
             conversation=self.conversation,
-            player_id=player_name
+            player_id=player.name
         )
-        message_dict = self._get_player_response(player_name, message_prompt)
+        message_dict = self._get_player_response(player.name, message_prompt)
         st.write(message_dict)
 
         message = message_dict['response']
-        formatted_message = f'{player_name}: {message}'
+        formatted_message = f'{player.name}: {message}'
         st.write(formatted_message)
 
         self.thoughts.append(thought_process)
         self.conversation = self.conversation + '  \n' + formatted_message
 
-        chat_msg = f'{player_name}: {message}'
+        chat_msg = f'{player.name}: {message}'
 
     def _get_player_response(self, player_name: str, prompt: str) -> Dict[str, Any]:
         '''
@@ -110,23 +104,20 @@ Information: {player_i_data['knowledge']}'''
         structured_response = {'player_id': player_name, 'prompt': prompt, 'response': response}    
         return structured_response
 
-    def player_vote(self, player_id: str) -> str:
+    def player_vote(self, player: Player) -> str:
         '''
         Based on all available info to an AI player, return a player name that the AI player votes for as the Werewolf
         '''
+        players_list = [player.name for player in self.players_manager.all_players.players]
+        players_str = ', '.join(players_list)
 
-        player_list = list(self.player_data.keys())
-        players_str = ', '.join(player_list)
-
-        player_i_data = self.player_data[player_id]
-
-        PROMPT_PLAYER_INTRO = f'''Your name is {player_id}.
-You are a {player_i_data['starting_role']}.
-You are on the {player_i_data['starting_team']} team.'''
+        PROMPT_PLAYER_INTRO = f'''Your name is {player.name}.
+You are a {player.starting_role}.
+You are on the {player.known_team} team.'''
 
         prompt = VOTE_PROMPT.format(
             player_intro=PROMPT_PLAYER_INTRO,
-            vote_goal=player_i_data['starting_goal'],
+            vote_goal=player.starting_goal,
             player_list=players_str,
             conversation=self.conversation
         )
@@ -140,8 +131,8 @@ You are on the {player_i_data['starting_team']} team.'''
         '''
         
         vote_results = []
-        for player_name in self.player_data.keys():
-            vote = self.player_vote(player_name)
+        for player in self.players_manager.all_players.players:
+            vote = self.player_vote(player)
             vote_results.append(vote)
 
         counter = Counter(vote_results)
@@ -154,17 +145,17 @@ You are on the {player_i_data['starting_team']} team.'''
             return 'werewolf', 'tie', 'tie', dict(counts)
         
         else:
-            eliminated_player = counts[0][0]
-            eliminated_player_data = self.player_data[eliminated_player]
-            eliminated_role = eliminated_player_data['true_role']
-            losing_team = eliminated_player_data['true_team']
+            eliminated_player_name = counts[0][0]
+            eliminated_player_data = self.action_manager._get_player_by_name(eliminated_player_name)
+            eliminated_role = eliminated_player_data.true_role
+            losing_team = eliminated_player_data.true_team
 
             if losing_team == 'villager':
                 winning_team = 'werewolf'
             elif losing_team == 'werewolf':
                 winning_team = 'villager'
             
-            return winning_team, eliminated_player, eliminated_role, dict(counts)
+            return winning_team, eliminated_player_data, eliminated_role, dict(counts)
 
     def show_results(self):
         st.markdown('#### Results')

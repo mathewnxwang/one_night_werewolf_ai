@@ -14,10 +14,10 @@ class GameManager:
     def __init__(self):
 
         self.players_manager = PlayersManager(PlayerNames, Roles)
-        self.action_manager = ActionManager(self.players_manager.all_players)
+        self.action_manager = ActionManager(self.players_manager.players)
         self.action_manager.execute_all_actions()
 
-        st.write(self.players_manager.all_players)
+        st.write(self.players_manager.players)
 
         self.conversation = ''
         self.thoughts = []
@@ -46,14 +46,14 @@ class GameManager:
             pass # use a template that steers a player to take action
 
         # Every player contributes to the conversation once in order
-        for player in self.players_manager.all_players.players:
+        for player in self.players_manager.players:
             self.player_turn(player)
 
     def player_turn(self, player: Player) -> None:
         '''
         Generate and store thoughts and a conversation message for a player
         '''
-        player_names_list = [player.name for player in self.players_manager.all_players.players]
+        player_names_list = [player.name for player in self.players_manager.players]
         player_names_list.remove(player.name)
         player_names_str = ', '.join(player_names_list)
 
@@ -108,7 +108,7 @@ Information: {player.knowledge}'''
         '''
         Based on all available info to an AI player, return a player name that the AI player votes for as the Werewolf
         '''
-        players_list = [player.name for player in self.players_manager.all_players.players]
+        players_list = [player.name for player in self.players_manager.players]
         players_str = ', '.join(players_list)
 
         PROMPT_PLAYER_INTRO = f'''Your name is {player.name}.
@@ -131,7 +131,7 @@ You are on the {player.known_team} team.'''
         '''
         
         vote_results = []
-        for player in self.players_manager.all_players.players:
+        for player in self.players_manager.players:
             vote = self.player_vote(player)
             vote_results.append(vote)
 

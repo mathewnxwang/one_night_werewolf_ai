@@ -2,7 +2,7 @@ from colorama import Fore, Style
 from enum import Enum
 from pydantic import BaseModel
 import random
-from typing import Any, Dict, List, Tuple
+import typing as t
 
 import streamlit as st
 
@@ -45,19 +45,15 @@ class Player(BaseModel):
     vote_goal: str
     knowledge: str = ""
 
-class AllPlayers(BaseModel):
-    players: List[Player]
-
 class PlayersManager:
     def __init__(self, player_names, roles):
         roles_list = list(roles)
         print('roles: ', roles)
-        players = []
+        self.players = []
         for player_name, role in zip(player_names, roles_list):
             player = self._instantiate_player(player_name, role)
-            players.append(player)
-        self.all_players = AllPlayers(players=players)
-        print('Initialized all players: ', self.all_players)
+            self.players.append(player)
+        print('Initialized all players: ', self.players)
 
     def _instantiate_player(self, player_name, role):
         true_team = Team[role.name].value
@@ -75,12 +71,12 @@ class PlayersManager:
         return player
 
 class ActionManager(PlayersManager):
-    def __init__(self, all_players: AllPlayers):
-        self.all_players = all_players
+    def __init__(self, players: t.List[Player]):
+        self.players = players
 
     def execute_all_actions(self) -> None:
         _color_print('Executing all player actions.', Fore.GREEN)
-        for player in self.all_players.players:
+        for player in self.players:
             if player.true_role == 'SEER':
                 self._execute_seer_action(player.name)
             elif player.true_role == 'ROBBER':
@@ -94,7 +90,7 @@ class ActionManager(PlayersManager):
         '''
         _color_print(f'Executing the seer action for {seer_player_name}.', Fore.GREEN)
         target_player_name = self._get_random_player(seer_player_name)
-        print('checking players data: ', self.all_players)
+        print('checking players data: ', self.players)
         target_player_role = self._get_player_by_name(target_player_name).true_role
         knowledge = f'As the seer, you saw that {target_player_name} is a {target_player_role}.'
 
@@ -150,7 +146,7 @@ class ActionManager(PlayersManager):
         '''
         Get the player name for the specified role
         '''
-        for player in self.all_players.players:
+        for player in self.players:
             print(f'checking if {player.name} is {true_role}')
             if player.true_role == true_role:
                 print(f'{player.name} is {true_role}')
@@ -158,7 +154,7 @@ class ActionManager(PlayersManager):
         raise ValueError(f'No player found with role: {true_role}')
 
     def _get_player_by_name(self, name: str):
-        for player in self.all_players.players:
+        for player in self.players:
             if player.name == name:
                 return player
         raise ValueError(f'No player found with name: {name}')
@@ -168,7 +164,7 @@ class ActionManager(PlayersManager):
         Get player name for a random player that is not the specified one
         '''
         print('choosing a random player')
-        eligible_players = [player for player in self.all_players.players if player.name != excluded_player_name]
+        eligible_players = [player for player in self.players if player.name != excluded_player_name]
         print('eligible players: ', eligible_players)
 
         # get a random player's data
@@ -192,5 +188,3 @@ class ActionManager(PlayersManager):
 
 def _color_print(msg: str, color: str) -> None:
     print(f'{color}{msg}{Style.RESET_ALL}')
-
-PlayersManager(PlayerNames, Roles)

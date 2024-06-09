@@ -1,6 +1,8 @@
 import streamlit as st
 
 from game_manager import GameManager
+from project_resource import UserInteractionOption, LLMOption
+from utils import get_enum_member_by_value
 
 page_title = 'One Night Werewolf, AI Version'
 st.set_page_config(page_title=page_title)
@@ -21,14 +23,24 @@ with col1:
 run_col1, run_col2 = st.columns(2)
 
 with run_col1:
-    run = st.button(label='Simulate Game')
+    game_option = st.selectbox(
+        label='Game option',
+        options=[option.value for option in UserInteractionOption]
+    )
+
 with run_col2:
-    dev_run = st.button(label='Dev Run')
+    llm_option = st.selectbox(
+        label='Select LLM option',
+        options=[option.value for option in LLMOption]
+    )
+
+run = st.button(label='Start game!')
 
 # Execute game
-
-if run or dev_run:
+if run:
     st.markdown('#### Deliberation')
-    game_manager = GameManager()
+    game_option_member = get_enum_member_by_value(UserInteractionOption, game_option)
+    llm_option_member = get_enum_member_by_value(LLMOption, llm_option)
+    game_manager = GameManager(game_option_member, llm_option_member)
     game_manager.conversation_full(rounds_n)
     game_manager.show_results()

@@ -1,4 +1,5 @@
 from collections import Counter
+from enum import Enum
 from typing import Any, Dict
 
 import streamlit as st
@@ -8,21 +9,24 @@ from prompt_templates import (
     MESSAGE_PROMPT,
     SYNTHESIS_PROMPT,
     VOTE_PROMPT)
-from players_manager import ActionManager, Player, PlayersManager, PlayerNames, Roles
+from players_manager import ActionManager, Player, PlayersManager
+from project_resource import PlayerNames, Roles, UserInteractionOption, LLMOption
 
 class GameManager:
-    def __init__(self):
+    def __init__(self, user_interaction_option: UserInteractionOption, use_llm_option: LLMOption):
 
         self.players_manager = PlayersManager(PlayerNames, Roles)
         self.action_manager = ActionManager(self.players_manager.players)
         self.action_manager.execute_all_actions()
-
         st.write(self.players_manager.players)
+
+        self.llm_manager = LLMManager()
+
+        self.user_interaction_option = user_interaction_option
+        self.use_llm_option = use_llm_option
 
         self.conversation = ''
         self.thoughts = []
-
-        self.llm_manager = LLMManager()
 
     def conversation_full(self, rounds: int) -> None:
         '''

@@ -1,49 +1,10 @@
 from colorama import Fore, Style
-from enum import Enum
-from pydantic import BaseModel
 import random
 import typing as t
 
 import streamlit as st
 
-class Roles(Enum):
-    WEREWOLF = "WEREWOLF"
-    SEER = "SEER"
-    VILLAGER = "VILLAGER"
-    ROBBER = "ROBBER"
-    TROUBLEMAKER = "TROUBLEMAKER"
-
-class PlayerNames(Enum):
-    MORTY = "Morty"
-    RICK = "Rick"
-    SUMMER = "Summer"
-    BETH = "Beth"
-    JERRY = "Jerry"
-
-class Team(Enum):
-    VILLAGER = 'VILLAGER'
-    SEER = 'VILLAGER'
-    ROBBER = 'VILLAGER'
-    TROUBLEMAKER = 'VILLAGER'
-    WEREWOLF = 'WEREWOLF'
-
-class GoalPrompt(Enum):
-    VILLAGER = "What can I say to find out who the werewolf is?"
-    WEREWOLF = "What can I say to prevent the other players from finding out that I\'m the werewolf?"
-
-class VotePrompt(Enum):
-    VILLAGER = "Vote for a player who is the werewolf."
-    WEREWOLF = "Vote for a player who is not the werewolf."
-
-class Player(BaseModel):
-    name: str
-    starting_role: str
-    true_role: str
-    true_team: str
-    known_team: str
-    starting_goal: str
-    vote_goal: str
-    knowledge: str = ""
+from project_resource import Player, Team, GoalPrompt, VotePrompt
 
 class PlayersManager:
     def __init__(self, player_names, roles):

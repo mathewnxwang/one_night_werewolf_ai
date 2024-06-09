@@ -1,6 +1,5 @@
 from collections import Counter
-from enum import Enum
-from typing import Any, Dict
+import typing as t
 
 import streamlit as st
 
@@ -10,7 +9,14 @@ from prompt_templates import (
     SYNTHESIS_PROMPT,
     VOTE_PROMPT)
 from players_manager import ActionManager, Player, PlayersManager
-from project_resource import PlayerNames, Roles, UserInteractionOption, LLMOption
+from project_resource import (
+    PlayerNames,
+    Roles,
+    UserInteractionOption,
+    LLMOption,
+    PlayerLLMResponse,
+    PlayerTurnData,
+    VoteResult)
 
 class GameManager:
     def __init__(self, user_interaction_option: UserInteractionOption, use_llm_option: LLMOption):
@@ -26,7 +32,7 @@ class GameManager:
         self.use_llm_option = use_llm_option
 
         self.conversation = ''
-        self.thoughts = []
+        self.thoughts: t.List[PlayerLLMResponse] = []
 
     def conversation_full(self, rounds: int) -> None:
         '''
@@ -57,17 +63,37 @@ class GameManager:
         '''
         Generate and store thoughts and a conversation message for a player
         '''
-        player_names_list = [player.name for player in self.players_manager.players]
-        player_names_list.remove(player.name)
-        player_names_str = ', '.join(player_names_list)
 
         thinking_msg = f'{player.name} is collecting their thoughts...'
         st.write(thinking_msg)
 
+        if self.use_llm_option == LLMOption.NO_LLM:
+            player_turn_data = self._generate_dummy_player_turn_data(player)
+        else:
+            player_turn_data = self._generate_llm_player_turn_data(player)
+        
+        self.thoughts.append(player_turn_data.thought_process)
+        self.conversation = self.conversation + '  \n' + player_turn_data.message
+
+    def _generate_dummy_player_turn_data(self, player: Player) -> PlayerTurnData:
+        '''
+        Generate dummy data for a player's turn
+        '''
+        thought = PlayerLLMResponse(player_id=player.name, prompt='dummy prompt', response='dummy thought')
+        st.write(thought)
+        message = f'{player.name}: dummy message'
+        st.write(message)
+        return PlayerTurnData(thought_process=thought, message=message)
+
+    def _generate_llm_player_turn_data(self, player: Player) -> PlayerTurnData:
+        other_player_names = [player.name for player in self.players_manager.players]
+        other_player_names.remove(player.name)
+        other_player_names_str = ', '.join(other_player_names)
+
         PROMPT_PLAYER_INTRO = f'''You are {player.name} from the TV show Rick and Morty, and you speak like them.
 You are a {player.starting_role}.
 You are on the {player.known_team} team.
-The other players in the game are {player_names_str}.'''
+The other players in the game are {other_player_names_str}.'''
 
         PROMPT_SYNTHESIS_INFO = f'''Goal: {player.starting_goal}
 Conversation: {self.conversation}
@@ -83,35 +109,37 @@ Information: {player.knowledge}'''
         st.write(deciding_msg)
         message_prompt = MESSAGE_PROMPT.format(
             player_intro=PROMPT_PLAYER_INTRO,
-            thought_process=thought_process['response'],
+            thought_process=thought_process.response,
             conversation=self.conversation,
             player_id=player.name
         )
-        message_dict = self._get_player_response(player.name, message_prompt)
-        st.write(message_dict)
+        message = self._get_player_response(player.name, message_prompt)
+        st.write(message)
 
-        message = message_dict['response']
-        formatted_message = f'{player.name}: {message}'
+        formatted_message = f'{player.name}: {message.response}'
         st.write(formatted_message)
 
-        self.thoughts.append(thought_process)
-        self.conversation = self.conversation + '  \n' + formatted_message
+        return PlayerTurnData(thought_process=thought_process, message=formatted_message)
 
-        chat_msg = f'{player.name}: {message}'
-
-    def _get_player_response(self, player_name: str, prompt: str) -> Dict[str, Any]:
+    def _get_player_response(self, player_name: str, prompt: str) -> PlayerLLMResponse:
         '''
         Call LLM and structure response
         '''
         response = self.llm_manager.call_llm(prompt)
-        
-        structured_response = {'player_id': player_name, 'prompt': prompt, 'response': response}    
+        structured_response = PlayerLLMResponse(
+            player_id=player_name,
+            prompt=prompt,
+            response=response
+        )
         return structured_response
 
     def player_vote(self, player: Player) -> str:
         '''
         Based on all available info to an AI player, return a player name that the AI player votes for as the Werewolf
         '''
+        if self.use_llm_option == LLMOption.NO_LLM:
+            return 'MORTY'
+        
         players_list = [player.name for player in self.players_manager.players]
         players_str = ', '.join(players_list)
 
@@ -129,7 +157,7 @@ You are on the {player.known_team} team.'''
         vote = self.llm_manager.call_llm(prompt)
         return vote
 
-    def all_vote(self):
+    def all_vote(self) -> VoteResult:
         '''
         Collect votes from all players and calculate the final result
         '''
@@ -146,36 +174,45 @@ You are on the {player.known_team} team.'''
         # and if the 2 players with the greatest number of votes
         # are tied with the same number of votes
         if len(counts) != 1 and counts[0][1] == counts[1][1]:
-            return 'werewolf', 'tie', 'tie', dict(counts)
-        
+            return VoteResult(
+                winning_team='WEREWOLF',
+                voted_player='tie',
+                voted_player_role='tie',
+                vote_counts=dict(counts)
+            )        
         else:
             eliminated_player_name = counts[0][0]
             eliminated_player_data = self.action_manager._get_player_by_name(eliminated_player_name)
             eliminated_role = eliminated_player_data.true_role
             losing_team = eliminated_player_data.true_team
 
-            if losing_team == 'villager':
-                winning_team = 'werewolf'
-            elif losing_team == 'werewolf':
-                winning_team = 'villager'
+            if losing_team == 'VILLAGER':
+                winning_team = 'WEREWOLF'
+            elif losing_team == 'WEREWOLF':
+                winning_team = 'VILLAGER'
             
-            return winning_team, eliminated_player_data, eliminated_role, dict(counts)
+            return VoteResult(
+                winning_team=winning_team,
+                voted_player=eliminated_player_name,
+                voted_player_role=eliminated_role,
+                vote_counts=dict(counts)
+            )
 
     def show_results(self):
         st.markdown('#### Results')
-        winning_team, eliminated_player, eliminated_role, vote_data = self.all_vote()
+        vote_result = self.all_vote()
 
-        if eliminated_player == 'tie':
+        if vote_result.voted_player == 'tie':
             win_msg = '''Players couldn\'t agree on who to eliminate and the vote ended up tied.
             As a result, the werewolf team wins!'''
         else:
-            win_msg = f'''{eliminated_player} was voted to be eliminated. They were a {eliminated_role}!
-            As a result, the {winning_team} team wins!'''
+            win_msg = f'''{vote_result.voted_player} was voted to be eliminated. They were a {vote_result.voted_player_role}!
+            As a result, the {vote_result.winning_team} team wins!'''
         st.write(win_msg)
         print(win_msg)
         
         st.markdown('#### Vote breakdown')
-        for name, count in vote_data.items():
+        for name, count in vote_result.vote_counts.items():
             vote_breakdown = f'{name}: {count} votes'
             st.write(vote_breakdown)
             print(vote_breakdown)

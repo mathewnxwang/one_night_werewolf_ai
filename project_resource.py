@@ -1,3 +1,4 @@
+import typing as t
 from enum import Enum
 
 from pydantic import BaseModel
@@ -31,6 +32,15 @@ class VotePrompt(Enum):
     VILLAGER = "Vote for a player who is the werewolf."
     WEREWOLF = "Vote for a player who is not the werewolf."
 
+class UserInteractionOption(Enum):
+    HUMAN_PLAYER = 'Play against AI'
+    AI_ONLY = 'Watch AI play against each other'
+
+class LLMOption(Enum):
+    GPT_4 = 'Sophisticated (GPT-4)'
+    GPT_3_5 = 'Unsophisticated (GPT-3.5)'
+    NO_LLM = 'Use dummy data for testing'
+
 class Player(BaseModel):
     name: str
     starting_role: str
@@ -41,11 +51,17 @@ class Player(BaseModel):
     vote_goal: str
     knowledge: str = ""
 
-class UserInteractionOption(Enum):
-    HUMAN_PLAYER = 'Play against AI'
-    AI_ONLY = 'Watch AI play against each other'
+class PlayerLLMResponse(BaseModel):
+    player_id: str
+    prompt: str
+    response: str
 
-class LLMOption(Enum):
-    GPT_4 = 'Sophisticated (GPT-4)'
-    GPT_3_5 = 'Unsophisticated (GPT-3.5)'
-    NO_LLM = 'Use dummy data for testing'
+class PlayerTurnData(BaseModel):
+    thought_process: PlayerLLMResponse
+    message: str
+
+class VoteResult(BaseModel):
+    winning_team: str
+    voted_player: str
+    voted_player_role: str
+    vote_counts: t.Dict
